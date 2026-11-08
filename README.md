@@ -48,7 +48,7 @@ main.c: programa para probar que la lectura funciona
     ./mapa.exe
 
 - Para compilar la visualizacion en powershell:
-    gcc SalidaVisualizacion.c tarea1.c -o juego.exe -lSDL3 -lSDL3_image
+    gcc SalidaVisualizacion.c tarea1.c tarea2.c -o juego.exe -lSDL3 -lSDL3_image
     ./juego.exe
 
 - Para compilar la tarea2 en ubuntu:
