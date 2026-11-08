@@ -3,62 +3,8 @@
 #include <SDL3/SDL_image.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "VisualizacionConstantes.h"
 #include <stdbool.h>
-
-#define flags SDL_INIT_VIDEO
-
-#define tituloventana "Plantas vs Zombies INFERNAL edition"
-#define anchuravent 1920
-#define alturavent 1080
-
-//AJUSTES PROMEDIO
-#define EJE_X 395.0f
-#define EJE_Y 145.0f
-
-#define ANCHO_CASILLA 148.0f
-#define ALTO_CASILLA  160.0f
-
-//AJUSTES GIRASOL
-#define EJE_X_GIRASOL 410.0f
-#define EJE_Y_GIRASOL 145.0f
-
-#define ANCHO_GIRASOL 110.0f
-#define ALTO_GIRASOL 125.0f
-
-//AJUSTES PLANTAS
-#define EJE_X_PLANTA 410.0f
-#define EJE_Y_PLANTA 145.0f
-
-#define ANCHO_PLANTA 120.0f
-#define ALTO_PLANTA 125.0f
-
-//AJUSTES GUISANTE
-#define EJE_X_PROYECTIL 450.0f
-#define EJE_Y_PROYECTIL 180.0f
-
-#define ANCHO_PROYECTIL 50.0f
-#define ALTO_PROYECTIL 50.0f
-
-//AJUSTES ZOMBIE
-#define EJE_X_ZOMBIE 395.0f
-#define EJE_Y_ZOMBIE 100.0f
-
-#define ANCHO_ZOMBIE 120.0f
-#define ALTO_ZOMBIE 195.0f
-
-//AJUSTES ZOMBIE ABANDEARDO
-#define EJE_X_ZOMBIE_ABANDERADO 340.0f
-#define EJE_Y_ZOMBIE_ABANDERADO 30.0f
-
-#define ANCHO_ZOMBIE_ABANDERADO 180.0f
-#define ALTO_ZOMBIE_ABANDERADO 270.0f
-
-//AJUSTES JUGADOR
-#define EJE_X_JUGADOR 540.0f
-#define EJE_Y_JUGADOR 310.0f
-
-#define ANCHO_JUGADOR 160.0f
-#define ALTO_JUGADOR 170.0f
 
 bool jugando = true;
 
@@ -259,58 +205,57 @@ int main(int argc, char *argv[]){
 				ALTO_PROYECTIL,
 			};
 
+			int Valor_Posicion = matriz[i][j];
 			// Si el valor es 1, cargamos la textura de zombie
-			if(matriz[i][j] == 1) {
+			switch(Valor_Posicion){
+				case 1:
 	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
 	    		SDL_RenderTexture(renderizador, texturaZombie, NULL, &rectZombie);
-	  			}
+				break;
 
-			else if(matriz[i][j] == 2) {
-	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+				case 2:
 	    		SDL_RenderTexture(renderizador, texturaAbanderado, NULL, &rectZombieAB);
-	  			}
+				break;
 
-			else if(matriz[i][j] == 4) {
-	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+				case 4:
 	    		SDL_RenderTexture(renderizador, texturaTumba, NULL, &rectCasilla);
-	  			}
+				break;
 
-			else if(matriz[i][j] == 5) {
-	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+				case 5:
 	    		SDL_RenderTexture(renderizador, texturaGirasol, NULL, &rectGirasol);
-	  			}
+				break;
 
-			else if(matriz[i][j] == 6) {
-	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+				case 6:
 	    		SDL_RenderTexture(renderizador, texturaLanzaguisantes, NULL, &rectPlanta);
-	  			}
+				break;
 				
-			else if(matriz[i][j] == 7) {
-	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+				case 7:
 	    		SDL_RenderTexture(renderizador, texturaNuez, NULL, &rectPlanta);
-	  			}
+				break;
 
-			else if(matriz[i][j] == 8) {
-	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+				case 8:
 	    		SDL_RenderTexture(renderizador, texturaSol, NULL, &rectPlanta);
-	  			}
+				break;
 
-			else if(matriz[i][j] == 9) {
-	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+				case 9:
 	    		SDL_RenderTexture(renderizador, texturaGuisante, NULL, &rectProyectil);
+				break;
 	  			}
-
 			}
     	}
 	
     // Creamos el rect del jugador
     // Posición base de la casilla en la matriz
-	//Calculamos primero las coordenadas del personaje
+	// Calculamos primero las coordenadas del personaje
 	float posicion_x = (EJE_X_JUGADOR + ((columnaJugador-1) * ANCHO_CASILLA)) - ((ANCHO_JUGADOR - ANCHO_CASILLA) / 2.0f);
 	float posicion_y = (EJE_Y_JUGADOR + ((filaJugador-1) * ALTO_CASILLA)) - (ALTO_JUGADOR - ALTO_CASILLA);
 
-	//Inicialización tradicional por posición { x, y, w, h }
-	SDL_FRect rectJugador = { posicion_x, posicion_y, ANCHO_JUGADOR, ALTO_JUGADOR };
+	SDL_FRect rectJugador = { 
+		posicion_x,
+		posicion_y, 
+		ANCHO_JUGADOR, 
+		ALTO_JUGADOR,
+	};
 
 	SDL_RenderTexture(renderizador, texturaJugador, NULL, &rectJugador);
 			SDL_RenderTexture(renderizador, texturaJugador, NULL, &rectJugador);
