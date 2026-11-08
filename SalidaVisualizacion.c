@@ -11,17 +11,54 @@
 #define anchuravent 1920
 #define alturavent 1080
 
+//AJUSTES PROMEDIO
 #define EJE_X 395.0f
-#define EJE_Y 160.0f
+#define EJE_Y 145.0f
 
 #define ANCHO_CASILLA 148.0f
 #define ALTO_CASILLA  160.0f
 
-#define EJE_X_JUGADOR 390.0f
-#define EJE_Y_JUGADOR 155.0f
+//AJUSTES GIRASOL
+#define EJE_X_GIRASOL 410.0f
+#define EJE_Y_GIRASOL 145.0f
 
-#define ANCHO_JUGADOR 153.0f
-#define ALTO_JUGADOR 165.0f
+#define ANCHO_GIRASOL 110.0f
+#define ALTO_GIRASOL 125.0f
+
+//AJUSTES PLANTAS
+#define EJE_X_PLANTA 410.0f
+#define EJE_Y_PLANTA 145.0f
+
+#define ANCHO_PLANTA 120.0f
+#define ALTO_PLANTA 125.0f
+
+//AJUSTES GUISANTE
+#define EJE_X_PROYECTIL 450.0f
+#define EJE_Y_PROYECTIL 180.0f
+
+#define ANCHO_PROYECTIL 50.0f
+#define ALTO_PROYECTIL 50.0f
+
+//AJUSTES ZOMBIE
+#define EJE_X_ZOMBIE 395.0f
+#define EJE_Y_ZOMBIE 100.0f
+
+#define ANCHO_ZOMBIE 120.0f
+#define ALTO_ZOMBIE 195.0f
+
+//AJUSTES ZOMBIE ABANDEARDO
+#define EJE_X_ZOMBIE_ABANDERADO 340.0f
+#define EJE_Y_ZOMBIE_ABANDERADO 30.0f
+
+#define ANCHO_ZOMBIE_ABANDERADO 180.0f
+#define ALTO_ZOMBIE_ABANDERADO 270.0f
+
+//AJUSTES JUGADOR
+#define EJE_X_JUGADOR 540.0f
+#define EJE_Y_JUGADOR 310.0f
+
+#define ANCHO_JUGADOR 160.0f
+#define ALTO_JUGADOR 170.0f
 
 bool jugando = true;
 
@@ -44,7 +81,7 @@ int main(int argc, char *argv[]){
 	int filaJugador = 1;
 	int columnaJugador = 1;
 	int filas, columnas;
-	
+
 	//Abrimos el archivo que contiene a la matriz generada aleatoriamente
 	FILE *ParaMatriz = fopen("DimensionesMapa.txt", "r");
 	
@@ -54,10 +91,18 @@ int main(int argc, char *argv[]){
 	}
     //Leer las dimensiones
     if (fscanf(ParaMatriz, "%d %d", &filas, &columnas) != 2) {
-        printf("Formato de dimensiones invalido.\n");
+		printf("Formato de dimensiones invalido.\n");
         fclose(ParaMatriz);
         return 1;
     }
+	
+	int movilidad[filas][columnas];
+	//Rellenamos la matriz para moverse de 0's
+	for (int i = 0; i < filas; i++) {
+		for (int j = 0; j < columnas; j++) {
+			movilidad[i][j] = 0;
+		}
+	}
 	
 	int matriz[filas][columnas];
 
@@ -82,7 +127,15 @@ int main(int argc, char *argv[]){
     // Cargamos assets
     SDL_Texture *texturaJardin = cargarTextura(renderizador, "Fotografias/Jardin.jpg");
     SDL_Texture *texturaJugador = cargarTextura(renderizador, "Fotografias/Seleccionador.png");
+	SDL_Texture *texturaZombie = cargarTextura(renderizador, "Fotografias/Zombie.png");
+	SDL_Texture *texturaAbanderado = cargarTextura(renderizador, "Fotografias/FlagZ.png");
+	SDL_Texture *texturaLanzaguisantes = cargarTextura(renderizador, "Fotografias/Lanzaguisantes.png");
+	SDL_Texture *texturaGirasol = cargarTextura(renderizador, "Fotografias/Girasol.png");
+	SDL_Texture *texturaNuez = cargarTextura(renderizador, "Fotografias/Nuez.png");
+	SDL_Texture *texturaGuisante = cargarTextura(renderizador, "Fotografias/Guisante.png");
+	SDL_Texture *texturaSol = cargarTextura(renderizador, "Fotografias/Sol.png");
 	SDL_Texture *texturaTumba = cargarTextura(renderizador, "Fotografias/Tumba.png");
+
 
     // Comprobamos que las texturas se cargaron bien
     if(!texturaJardin || !texturaJugador){
@@ -95,11 +148,11 @@ int main(int argc, char *argv[]){
     // Ciclo de juego
     while(jugando){
 
-    // Variable para gestionar eventos
-    SDL_Event evento;
-    while(SDL_PollEvent(&evento)){
+		// Variable para gestionar eventos
+		SDL_Event evento;
+		while(SDL_PollEvent(&evento)){
 
-	//Si el evento es de tipo cerrar la ventana terminamos el ciclo
+		//Si el evento es de tipo cerrar la ventana terminamos el ciclo
 		if(evento.type == SDL_EVENT_QUIT)
 		jugando = false;
 	
@@ -141,7 +194,7 @@ int main(int argc, char *argv[]){
 	}
 
 	// Comprobamos que el siguiente movimiento sea valido y actualizamos la posicion
-	if(siguienteFila >=0 && siguienteFila < filas && siguienteColumna >=0 && siguienteColumna < columnas && matriz[siguienteFila][siguienteColumna] == 0){
+	if(siguienteFila >=0 && siguienteFila < filas && siguienteColumna >=0 && siguienteColumna < columnas && movilidad[siguienteFila][siguienteColumna] == 0){
 
 	    filaJugador = siguienteFila;
 	    columnaJugador = siguienteColumna;
@@ -154,38 +207,110 @@ int main(int argc, char *argv[]){
     SDL_RenderTexture(renderizador,texturaJardin,NULL,NULL);
 
     // Recorremos la matriz dibujando con las texturas
-
     for(int i = 0; i < filas; i++){
 		for(int j = 0; j < columnas; j++){
 			
+			//Seguir por posicion x, y, w, h
 			// Convertimos casillas a pixeles
 			SDL_FRect rectCasilla = {
 				EJE_X + (j * ANCHO_CASILLA),
 				EJE_Y + (i * ALTO_CASILLA),
 				ANCHO_CASILLA,
-				ALTO_CASILLA
+				ALTO_CASILLA,
 			};
 
-			// Si el valor es 4, cargamos la textura de tumba
-			if(matriz[i][j] == 4) {
-				
+			//Ajustamos Zombies
+			SDL_FRect rectZombie = {
+				EJE_X_ZOMBIE + (j * ANCHO_CASILLA), 
+				EJE_Y_ZOMBIE + (i * ALTO_CASILLA), 
+				ANCHO_ZOMBIE, 
+				ALTO_ZOMBIE,
+			};
+
+			//Ajustamos Zombie ABANDERADO
+			SDL_FRect rectZombieAB = {
+				EJE_X_ZOMBIE_ABANDERADO + (j * ANCHO_CASILLA), 
+				EJE_Y_ZOMBIE_ABANDERADO + (i * ALTO_CASILLA), 
+				ANCHO_ZOMBIE_ABANDERADO, 
+				ALTO_ZOMBIE_ABANDERADO,
+			};
+			
+			//Ajustamos PLanta
+			SDL_FRect rectPlanta = {
+				EJE_X_PLANTA + (j * ANCHO_CASILLA),
+				EJE_Y_PLANTA + (i * ALTO_CASILLA),
+				ANCHO_PLANTA,
+				ALTO_PLANTA,
+			};
+			
+			//Ajustamos Girasol
+			SDL_FRect rectGirasol = {
+				EJE_X_GIRASOL + (j * ANCHO_CASILLA),
+				EJE_Y_GIRASOL + (i * ALTO_CASILLA),
+				ANCHO_GIRASOL,
+				ALTO_GIRASOL,
+			};
+			
+			//Ajustamos Guisantes
+			SDL_FRect rectProyectil = {
+				EJE_X_PROYECTIL + (j * ANCHO_CASILLA),
+				EJE_Y_PROYECTIL + (i * ALTO_CASILLA),
+				ANCHO_PROYECTIL,
+				ALTO_PROYECTIL,
+			};
+
+			// Si el valor es 1, cargamos la textura de zombie
+			if(matriz[i][j] == 1) {
+	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+	    		SDL_RenderTexture(renderizador, texturaZombie, NULL, &rectZombie);
+	  			}
+
+			else if(matriz[i][j] == 2) {
+	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+	    		SDL_RenderTexture(renderizador, texturaAbanderado, NULL, &rectZombieAB);
+	  			}
+
+			else if(matriz[i][j] == 4) {
 	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
 	    		SDL_RenderTexture(renderizador, texturaTumba, NULL, &rectCasilla);
 	  			}
+
+			else if(matriz[i][j] == 5) {
+	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+	    		SDL_RenderTexture(renderizador, texturaGirasol, NULL, &rectGirasol);
+	  			}
+
+			else if(matriz[i][j] == 6) {
+	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+	    		SDL_RenderTexture(renderizador, texturaLanzaguisantes, NULL, &rectPlanta);
+	  			}
+				
+			else if(matriz[i][j] == 7) {
+	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+	    		SDL_RenderTexture(renderizador, texturaNuez, NULL, &rectPlanta);
+	  			}
+
+			else if(matriz[i][j] == 8) {
+	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+	    		SDL_RenderTexture(renderizador, texturaSol, NULL, &rectPlanta);
+	  			}
+
+			else if(matriz[i][j] == 9) {
+	    		// Dibujamos la textura, NULL indica que usaremos la imagen completa
+	    		SDL_RenderTexture(renderizador, texturaGuisante, NULL, &rectProyectil);
+	  			}
+
 			}
     	}
 	
-    	// Creamos el rect del jugador
-    	// Posición base de la casilla en la matriz
-	float celda_x = EJE_X_JUGADOR + (columnaJugador * ANCHO_CASILLA);
-	float celda_y = EJE_Y_JUGADOR + (filaJugador * ALTO_CASILLA);
+    // Creamos el rect del jugador
+    // Posición base de la casilla en la matriz
+	//Calculamos primero las coordenadas del personaje
+	float posicion_x = (EJE_X_JUGADOR + ((columnaJugador-1) * ANCHO_CASILLA)) - ((ANCHO_JUGADOR - ANCHO_CASILLA) / 2.0f);
+	float posicion_y = (EJE_Y_JUGADOR + ((filaJugador-1) * ALTO_CASILLA)) - (ALTO_JUGADOR - ALTO_CASILLA);
 
-	SDL_FRect rectJugador = {
-		.x = celda_x - ((ANCHO_JUGADOR - ANCHO_CASILLA) / 2.0f), // Centrado horizontal
-		.y = celda_y - (ALTO_JUGADOR - ALTO_CASILLA),            // Ajuste vertical a la base
-		.w = ANCHO_JUGADOR,
-		.h = ALTO_JUGADOR
-	};
+	//Inicialización tradicional por posición { x, y, w, h }
+	SDL_FRect rectJugador = { posicion_x, posicion_y, ANCHO_JUGADOR, ALTO_JUGADOR };
 
 	SDL_RenderTexture(renderizador, texturaJugador, NULL, &rectJugador);
 			SDL_RenderTexture(renderizador, texturaJugador, NULL, &rectJugador);
