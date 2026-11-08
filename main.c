@@ -19,6 +19,5 @@ int main() {
     // se libera la memoria al finalizar la prueba
     liberar_mapa(&mapa);
     printf("\nmemoria liberada correctamente.\n");
-
     return 0;
 }
