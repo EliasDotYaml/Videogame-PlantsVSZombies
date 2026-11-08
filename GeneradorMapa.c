@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "tarea1.h"
+#include "Tarea1Constantes.h"
 
 // programa que genera mapas aleatorios
 // asigna probabilidades a cada casilla y genera un archivo de texto

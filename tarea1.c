@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "tarea1.h"
+#include "Tarea1Constantes.h"
 
 // busca el archivo Logica.txt y guarda los valores
 Configuracion cargar_configuracion(const char *nombre_archivo) {
