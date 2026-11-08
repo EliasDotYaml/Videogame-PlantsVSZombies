@@ -10,7 +10,7 @@ int main() {
     // se definen las dimensiones del jardin
     int filas = 5;
     int columnas = 9;
-    const char *nombre_salida = "mapa.txt";
+    const char *nombre_salida = "GeneradorMapa.txt";
 
     // se inica la semilla para que el generador cree un mapa distinto cada vez
     srand((unsigned int)time(NULL));

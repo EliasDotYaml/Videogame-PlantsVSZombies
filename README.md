@@ -33,3 +33,15 @@ main.c: programa para probar que la lectura funciona
         Mapa mapa = cargar_mapa("mapa.txt")
     liberar memoria al finalizar el juego:
         liberar_mapa(&mapa)
+
+- Para compilar main.c en powershell:
+    gcc main.c tarea1.c -o main.exe
+    .\main.exe
+
+- Para compilar GeneradorMapa.c en powershell:
+    gcc GeneradorMapa.c tarea1.c -o mapa.exe
+    ./mapa.exe
+
+- Para compilar la visualizacion en powershell:
+    gcc SalidaVisualizacion.c tarea1.c -o juego.exe -lSDL3 -lSDL3_image
+    ./juego.exe

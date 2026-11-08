@@ -3,7 +3,7 @@
 #include <string.h>
 #include "tarea1.h"
 
-// busca el archivo config.txt y guarda los valores
+// busca el archivo Logica.txt y guarda los valores
 Configuracion cargar_configuracion(const char *nombre_archivo) {
     Configuracion config = {0, 0, 0, 0, 0};
   
@@ -19,12 +19,12 @@ Configuracion cargar_configuracion(const char *nombre_archivo) {
 
     // lee el nombre del parametro y su valor
     while(fscanf(fp, "%49s %d", clave, &valor) == 2) {
-        // strcasemp compara el texto sin importar si es mayuscula o minuscula
-        if (strcasemp(clave, "cantidad_oleadas") == 0) config.max_oleadas = valor;
-        else if (strcasemp(clave, "resistencia_zombie") == 0) config.resistencia_zombie = valor;
-        else if (strcasemp(clave, "resistencia_casa") == 0) config.resistencia_casa = valor;
-        else if (strcasemp(clave, "frecuencia_sol") == 0) config.frecuencia_sol = valor;
-        else if (strcasemp(clave, "frecuencia_disparo") == 0) config.frecuencia_disparo = valor;
+        // strcasecmp compara el texto sin importar si es mayuscula o minuscula
+        if (strcasecmp(clave, "cantidad_oleadas") == 0) config.max_oleadas = valor;
+        else if (strcasecmp(clave, "resistencia_zombie") == 0) config.resistencia_zombie = valor;
+        else if (strcasecmp(clave, "resistencia_casa") == 0) config.resistencia_casa = valor;
+        else if (strcasecmp(clave, "frecuencia_sol") == 0) config.frecuencia_sol = valor;
+        else if (strcasecmp(clave, "frecuencia_disparo") == 0) config.frecuencia_disparo = valor;
     }
 
     // se cierra el archivo

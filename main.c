@@ -3,14 +3,14 @@
 
 int main() {
     printf("Probando lectura de configuracion \n");
-    // se usa la funcion para cargar config.txt
-    Configuracion config = cargar_configuracion("config.txt");
+    // se usa la funcion para cargar Logica.txt
+    Configuracion Logica = cargar_configuracion("Logica.txt");
     // se imprimen los valores leidos
-    printf("Oleadas: %d Vida Zombie: %d Vida Casa: %d\n\n", config.max_oleadas, config.resistencia_zombie, config.resistencia_casa);
+    printf("Oleadas: %d Vida Zombie: %d Vida Casa: %d\n\n", Logica.max_oleadas, Logica.resistencia_zombie, Logica.resistencia_casa);
 
     printf("=== probando lectura y memoria de mapa ===\n");
-    // se carga la matriz del mapa de mapa.txt
-    Mapa mapa = cargar_mapa("mapa.txt");
+    // se carga la matriz del mapa de DimensionesMapa.txt
+    Mapa mapa = cargar_mapa("DimensionesMapa.txt");
     printf("Dimensiones del jardin: %d filas x %d columnas\n", mapa.filas, mapa.columnas);
     printf("matriz cargada en ram:\n");
     // se muestra el mapa en pantalla
