@@ -9,13 +9,13 @@ int** matriz_vida(Mapa *mapa, Configuracion config) {
     int **matriz_vida = (int **)malloc(mapa->filas * sizeof(int *));
     
     //reviso de arriba a abajo
-    for (int y = 0; y < 5; y++) {
+    for (int y = 0; y < mapa->filas; y++) {
 
         //reservo la memoria para las columnas??, tuve que preguntar esto pues la verdad no tengo claro porque va acá
         matriz_vida[y] = (int *)malloc(mapa->columnas * sizeof(int));
 
         //reviso de izquierda a derecha
-        for (int x = 0; x < 9; x++) {
+        for (int x = 0; x < mapa->columnas; x++) {
             
             //acá guardo que entidad hay en cada casila
             int entidad = mapa->matriz[y][x];
@@ -44,6 +44,29 @@ int** matriz_vida(Mapa *mapa, Configuracion config) {
     
     // Devolvemos la matriz lista para usar
     return matriz_vida;
+}
+
+//funcion para crear una matriz que muestra la posicion de los guisantes en cada momento
+int** matriz_guisantes(Mapa *mapa) {
+    
+    //reservo la memoria de la matriz
+    int **matriz_guisantes = (int **)malloc(mapa->filas * sizeof(int *));
+    
+    //reviso de arriba a abajo
+    for (int y = 0; y < mapa->filas; y++) {
+
+        //reservo la memoria para las columnas??, tuve que preguntar esto pues la verdad no tengo claro porque va acá
+        matriz_guisantes[y] = (int *)malloc(mapa->columnas * sizeof(int));
+
+        //reviso de izquierda a derecha
+        for (int x = 0; x < mapa->columnas; x++) {
+
+            //lleno la matriz de ceros para poder trabajar con ella
+            matriz_guisantes[y][x] = 0;
+
+        }
+    }
+    return matriz_guisantes;
 }
 
 //funcion que en cada turno mueve a los zombies o los hace comer
@@ -114,8 +137,8 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
     }
 }
 
-//funcion aue controla el ataque de los lanzaguisantes
-void ataque_lanzaguisantes (Mapa *mapa, int turno, Configuracion config,int** matriz_vida) {
+//funcion que revisa si los lanza guisantes deben atacar y si es así lanza un guisante
+void buscar_zombies_atacar (Mapa *mapa, int turno, Configuracion config, int** matriz_guisantes) {
 
     //entonces si no estamos en un turno divisor exacto de la frecuencia de disparo del lanzaguisantes no disparara, cosa que por ejemplo:
     
@@ -146,18 +169,10 @@ void ataque_lanzaguisantes (Mapa *mapa, int turno, Configuracion config,int** ma
                 //mientras no se haya encontrado un zombie y no se haya llegado al final
                 while(index<9 && encontrar_zombie == 0){
 
-                    //si la casilla es un zombie lo asesina y termina el bucle
+                    //si la casilla es un zombie lanza un guisante y deja de buscar
                     if(mapa->matriz[y][index]==zombie_basico || mapa->matriz[y][index]==zombie_flag || mapa->matriz[y][index]==obstaculo){
 
-                        //le quito vida al zombie
-                        matriz_vida[y][index] = matriz_vida[y][index] - 5;
-
-                        //si el zombie esta muerto lo deja de escribir
-                        if(matriz_vida[y][index] <= 0){
-                            mapa->matriz[y][index] = casilla_vacia;
-                            matriz_vida[y][index] = 0;
-                        }
-                        
+                        matriz_guisantes[y][x] = guisante ;
                         encontrar_zombie = 1;
                     }
 
@@ -168,6 +183,65 @@ void ataque_lanzaguisantes (Mapa *mapa, int turno, Configuracion config,int** ma
                 
 
 
+            }
+        }
+    }
+}
+
+
+//funcion que mueve los guisantes hacia los zombies y les hace daño
+void mover_guisantes (Mapa *mapa ,int** matriz_vida, int** matriz_guisantes){
+
+    //veo de arriba a abajo
+    for (int y = 0; y < mapa->filas; y++) {
+        
+        // veo de izquierda a derecha(para no mover el mismo guisante 2 veces ni nada por el estilo)
+        for (int x = mapa->columnas-1; x > -1; x--) {    
+
+            // verifico si hay un guisante en una posicion
+            if(matriz_guisantes[y][x] == guisante){
+                
+                // Si el guisante está en la última columna, lo eliminamos para que no explote todo HUOCDHASJB
+                if(x + 1 >= mapa->columnas){
+                    matriz_guisantes[y][x] = casilla_vacia;
+                    continue; 
+                }
+                
+                // Revisamos si hay un zombie en la casilla actual
+                //si es asi
+                if(mapa->matriz[y][x] == zombie_basico || mapa->matriz[y][x] == zombie_flag || mapa->matriz[y][x] == obstaculo){
+                    
+                    //destruyo el guisante
+                    matriz_guisantes[y][x] = casilla_vacia;
+                    //le hago daño al zombie
+                    matriz_vida[y][x] = matriz_vida[y][x] - 5;
+
+                    //si la entidad muere la asesino
+                    if (matriz_vida[y][x] <= 0){
+                        matriz_vida[y][x] = 0;
+                        mapa->matriz[y][x] = casilla_vacia;
+                    }
+                }
+
+                //exactamente lo mismo pero lo pruebo para el zombie de en frente
+                //lo hago 2 veces por si requiero como cambiar el orden de las funciones en main.c
+                //ya sufri por no pensar en ese casos
+                else if(mapa->matriz[y][x+1] == zombie_basico || mapa->matriz[y][x+1] == zombie_flag || mapa->matriz[y][x+1] == obstaculo){
+                    matriz_guisantes[y][x] = casilla_vacia;
+                    matriz_vida[y][x+1] = matriz_vida[y][x+1] - 5;
+                    if (matriz_vida[y][x+1] <= 0){
+                        matriz_vida[y][x+1] = 0;
+                        mapa->matriz[y][x+1] = casilla_vacia;
+                    }
+                }
+
+                //si no hay nada en frente muevo el guisante simplemente
+                else {
+                    //asesino al guisante
+                    matriz_guisantes[y][x] = casilla_vacia;
+                    //coloco un guisante en la siguiente posicion
+                    matriz_guisantes[y][x+1] = guisante;
+                }
             }
         }
     }
@@ -221,6 +295,7 @@ int verificar_victoria (Mapa *mapa){
 //funcion que sirve para spawnear zombies 
 int spawnear_zombies(Mapa *mapa, int** matriz_vida, Configuracion config){
 
+
     //spawnea a lo largo de toda la ultima columna
     for(int r = 0; r < 5; r++){
 
@@ -252,4 +327,21 @@ int spawnear_zombies(Mapa *mapa, int** matriz_vida, Configuracion config){
         }
     }
     return 0;
+}
+
+void imprimir_matriz_guisantes(int** matriz_guisantes, Mapa *mapa){
+
+    printf("matriz guisantes");
+    printf("\n");
+
+    for(int y = 0; y < mapa->filas; y++){
+        for(int x = 0; x < mapa->columnas; x++){
+
+            printf("%i ", matriz_guisantes[y][x]);
+
+
+        }
+        printf("\n");
+    }
+
 }
