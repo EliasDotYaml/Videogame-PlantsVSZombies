@@ -69,6 +69,29 @@ int** matriz_guisantes(Mapa *mapa) {
     return matriz_guisantes;
 }
 
+//funcion para crear una matriz que muestra la posicion los soles en cada momento
+int** matriz_soles(Mapa *mapa) {
+    
+    //reservo la memoria de la matriz
+    int **matriz_soles = (int **)malloc(mapa->filas * sizeof(int *));
+    
+    //reviso de arriba a abajo
+    for (int y = 0; y < mapa->filas; y++) {
+
+        //reservo la memoria para las columnas??, tuve que preguntar esto pues la verdad no tengo claro porque va acá
+        matriz_soles[y] = (int *)malloc(mapa->columnas * sizeof(int));
+
+        //reviso de izquierda a derecha
+        for (int x = 0; x < mapa->columnas; x++) {
+
+            //lleno la matriz de ceros para poder trabajar con ella
+            matriz_soles[y][x] = 0;
+
+        }
+    }
+    return matriz_soles;
+}
+
 //funcion que en cada turno mueve a los zombies o los hace comer
 void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
 
@@ -187,7 +210,6 @@ void buscar_zombies_atacar (Mapa *mapa, int turno, Configuracion config, int** m
         }
     }
 }
-
 
 //funcion que mueve los guisantes hacia los zombies y les hace daño
 void mover_guisantes (Mapa *mapa ,int** matriz_vida, int** matriz_guisantes){
@@ -329,6 +351,7 @@ int spawnear_zombies(Mapa *mapa, int** matriz_vida, Configuracion config){
     return 0;
 }
 
+//funcion para imprimir la matriz guisantes en cada turno
 void imprimir_matriz_guisantes(int** matriz_guisantes, Mapa *mapa){
 
     printf("matriz guisantes");
@@ -338,6 +361,61 @@ void imprimir_matriz_guisantes(int** matriz_guisantes, Mapa *mapa){
         for(int x = 0; x < mapa->columnas; x++){
 
             printf("%i ", matriz_guisantes[y][x]);
+
+
+        }
+        printf("\n");
+    }
+
+}
+
+//funcion para generar soles aleatorios en una casilla aleatoria del mapa
+void generar_soles(int** matriz_soles, int turno, Mapa *mapa, Configuracion config){
+
+    //parte que genera los soles aleatorios que caen del cielo
+
+    //genera un sol aleatorio cada 10 turnos
+    if(turno % 10 == 0){
+
+        //genera una posicion aleatoria
+        int x_sol = rand()%mapa->columnas;
+        int y_sol = rand()%mapa->filas;
+
+        //coloca un sol en el lugar previamente colocado
+        matriz_soles[y_sol][x_sol] = matriz_soles[y_sol][x_sol] + 1;
+
+    }
+
+    //parte que spawnea un sol en un girasol cada x turnos
+
+    if(turno % config.frecuencia_sol == 0){
+
+        for(int y = 0; y < mapa->filas; y++){
+
+            for(int x = 0; x < mapa->columnas; x++){
+
+                if(mapa->matriz[y][x] == girasol){
+
+                    matriz_soles[y][x] = matriz_soles[y][x] + 1;
+
+                }
+            }
+        }
+
+    }
+
+}
+
+//funcion para imprimir la matriz soles en cada turno
+void imprimir_matriz_soles(int** matriz_soles, Mapa *mapa){
+
+    printf("matriz soles");
+    printf("\n");
+
+    for(int y = 0; y < mapa->filas; y++){
+        for(int x = 0; x < mapa->columnas; x++){
+
+            printf("%i ", matriz_soles[y][x]);
 
 
         }
