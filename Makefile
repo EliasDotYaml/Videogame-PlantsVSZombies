@@ -5,9 +5,9 @@ CFLAGS = -Wall -Wextra -g
 # regla principal: compila el programa de prueba y el generador
 all: prueba generador probar_paquete1
 
-# compila el ejecutable 'prueba'
-prueba: main.o tarea1.o
-	$(CC) $(CFLAGS) -o prueba main.o tarea1.o
+# compila el ejecutable 'prueba' (AQUÍ SE AGREGÓ tarea2.o)
+prueba: main.o tarea1.o tarea2.o
+	$(CC) $(CFLAGS) -o prueba main.o tarea1.o tarea2.o
 
 # compila el ejecutable 'generador'
 generador: GeneradorMapa.o tarea1.o 
@@ -22,6 +22,9 @@ main.o: main.c Tarea1Constantes.h
 
 tarea1.o: tarea1.c Tarea1Constantes.h
 	$(CC) $(CFLAGS) -c tarea1.c 
+
+tarea2.o: tarea2.c Tarea1Constantes.h
+	$(CC) $(CFLAGS) -c tarea2.c
 	
 GeneradorMapa.o: GeneradorMapa.c Tarea1Constantes.h
 	$(CC) $(CFLAGS) -c GeneradorMapa.c
