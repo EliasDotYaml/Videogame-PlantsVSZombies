@@ -1,14 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "Tarea1Constantes.h"
 
 //declaro mis funciones de la tarea 2
-void mover_zombies(Mapa *mapa, int** matriz_vida,int turno);
-void ataque_lanzaguisantes (Mapa *mapa, int turno, Configuracion config,int** matriz_vida);
+void mover_zombies(Mapa *mapa, int** matriz_vida, int turno);
+void buscar_zombies_atacar(Mapa *mapa, int turno, Configuracion config, int** matriz_guisantes);
+void mover_guisantes(Mapa *mapa, int** matriz_vida, int** matriz_guisantes);
+void imprimir_matriz_guisantes(int** matriz_guisantes, Mapa *mapa);
 int** matriz_vida(Mapa *mapa, Configuracion config);
+int** matriz_guisantes(Mapa *mapa);
 int verificar_victoria (Mapa *mapa);
 int spawnear_zombies(Mapa *mapa, int** matriz_vida, Configuracion config);
-
 
 int main() {
     printf("Probando lectura de configuracion \n");
@@ -27,6 +30,8 @@ int main() {
 
     //declaro una matriz de vida
     int **matriz_vidas = matriz_vida(&mapa, config);
+    //declaro una matriz de guisantes
+    int **matriz_guis = matriz_guisantes(&mapa);
 
 
 
@@ -43,9 +48,12 @@ int main() {
     while(continua != 1 && continua != 2){
         printf("\n--- TURNO %d ---\n", turno);
         
-        mover_zombies(&mapa, matriz_vidas,turno);
-        ataque_lanzaguisantes(&mapa, turno, config, matriz_vidas);
+        mover_zombies(&mapa, matriz_vidas, turno);
+        buscar_zombies_atacar(&mapa, turno, config, matriz_guis);
+        mover_guisantes(&mapa, matriz_vidas, matriz_guis);
+
         imprimir_mapa(&mapa);
+        imprimir_matriz_guisantes(matriz_guis, &mapa);
 
         //tengo que modificar esto para subir la dificultad ejjejejejejje
         if(zombies_ronda != 20){
@@ -71,6 +79,15 @@ int main() {
     }
 
     liberar_mapa(&mapa);
+
+    //libero las matrices dinamicas creadas
+    for (int y = 0; y < mapa.filas; y++) {
+        free(matriz_vidas[y]);
+        free(matriz_guis[y]);
+    }
+    free(matriz_vidas);
+    free(matriz_guis);
+
     printf("\n memoria liberada correctamente \n");
 
     return 0;
