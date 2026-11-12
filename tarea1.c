@@ -106,3 +106,44 @@ void imprimir_mapa(const Mapa *mapa) {
         printf("\n");
     }
 }
+
+// colocamos una planta en el mapa y restamos los soles disponibles
+int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles) {
+    if (mapa == NULL || mapa->matriz == NULL) return 0; // error si el mapa o la matriz de vida es NULL
+    if (fila < 0 || fila >= mapa->filas || columna < 0 || columna >= mapa->columnas) return 0; // error si la posición está fuera del mapa
+    if (mapa->matriz[fila][columna] != casilla_vacia) return 0; // error si la casilla no está vacía
+    int costo = 0;
+    int vida_inicial = 0;
+    switch (tipo_planta) {
+        case girasol:
+            costo = costo_girasol;
+            vida_inicial = 5; // vida inicial del girasol
+            break;
+        case lanzaguisantes:
+            costo = costo_lanzaguisantes;
+            vida_inicial = 5; // vida inicial del lanzaguisantes
+            break;
+        case nuez:
+            costo = costo_nuez;
+            vida_inicial = 5; // vida inicial de la nuez
+            break;
+        case patatapum_abajo:
+        case patatapum_arriba:
+            costo = costo_patatapum;
+            vida_inicial = 8; // vida inicial del patatapum
+            break;
+        default:
+            return 0; // error si el tipo de planta no es válido
+    }
+    if (soles_disponibles != NULL) {
+        if (*soles_disponibles < costo) {
+            return 0; // error si no hay suficientes soles
+        }
+        *soles_disponibles -= costo; // restamos el costo de la planta a los soles disponibles
+    }
+    mapa->matriz[fila][columna] = tipo_planta; // colocamos la planta en el mapa
+    if (matriz_vida != NULL) {
+        matriz_vida[fila][columna] = vida_inicial; // asignamos la vida inicial a la planta
+    }
+    return 1; // éxito al colocar la planta
+}

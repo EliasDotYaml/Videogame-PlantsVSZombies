@@ -36,3 +36,10 @@ Configuracion cargar_configuracion(const char *nombre_archivo);
 Mapa cargar_mapa(const char *nombre_archivo);
 void liberar_mapa(Mapa *mapa);
 void imprimir_mapa(const Mapa *mapa);
+
+#define costo_girasol 50
+#define costo_lanzaguisantes 100
+#define costo_nuez 50
+#define costo_patatapum 150
+
+int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles);
