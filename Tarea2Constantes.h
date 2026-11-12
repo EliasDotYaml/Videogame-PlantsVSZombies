@@ -19,3 +19,6 @@ void mover_zombies(Mapa *mapa, int** matriz_vida, int turno);
 int** matriz_soles(Mapa *mapa);
 void generar_soles(int** matriz_soles, int turno, Mapa *mapa, Configuracion config);
 void imprimir_matriz_soles(int** matriz_soles, Mapa *mapa);
+
+//logica patatapum
+void patatapum_comportamiento(Mapa *mapa,int turno);

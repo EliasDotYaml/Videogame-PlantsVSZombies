@@ -11,6 +11,8 @@
 #define nuez 7
 #define sol 8
 #define guisante 9
+#define patatapum_abajo 10
+#define patatapum_arriba 11
 
 // estructura para los datos de config.txt
 typedef struct {

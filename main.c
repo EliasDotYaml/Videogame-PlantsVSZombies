@@ -26,6 +26,8 @@ int** matriz_soles(Mapa *mapa);
 void generar_soles(int** matriz_soles, int turno, Mapa *mapa, Configuracion config);
 void imprimir_matriz_soles(int** matriz_soles, Mapa *mapa);
 
+//logica patatapum
+void patatapum_comportamiento(Mapa *mapa,int turno);
 
 int main() {
     printf("Probando lectura de configuracion \n");
@@ -79,6 +81,9 @@ int main() {
 
         //mueve los guisantes o impactan si tocan un zombie
         mover_guisantes(&mapa, matriz_vidas, matriz_guis);
+
+        //sube a las patatapum necesarias
+        patatapum_comportamiento(&mapa, turno);
 
         //imprime el mapa principal
         imprimir_mapa(&mapa);

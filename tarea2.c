@@ -36,6 +36,9 @@ int** matriz_vida(Mapa *mapa, Configuracion config) {
             else if (entidad == obstaculo) {
                 matriz_vida[y][x] = 20;
             }
+            else if(entidad == patatapum_abajo || entidad == patatapum_arriba){
+                matriz_vida[y][x] = 8;
+            }
             else {
                 matriz_vida[y][x] = 0;
             }
@@ -104,9 +107,22 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
             // reviso si en la casilla [y][x] hay un zombie basico
             if (mapa->matriz[y][x] == zombie_basico) {
                 
+                //reviso si la casilla siguiente es una patatapum_arriba, de ser así lo asesina
+                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_arriba)){
 
+                    //le quita la vida a la patatapum
+                    matriz_vida[y][x-1] = 0;
+
+                    //le quita la vida a el zombie
+                    matriz_vida[y][x] = 0;
+                    
+                    //mata al zombie y a la patatapum
+                    mapa->matriz[y][x] = casilla_vacia;
+                    mapa->matriz[y][x-1] = casilla_vacia;
+
+                }
                 //reviso si la casilla siguiente es una planta para atacarla si ese es el caso
-                if (x > 0 && (mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes)) {
+                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes)) {
                     
                     //le baja vida a la planta
                     matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
@@ -142,13 +158,20 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
 
             // no comento esta parte porque es como exactamente la misma logica de antes pero para el zombie abanderado
             if (mapa->matriz[y][x] == zombie_flag) {
-                if (x > 0 && mapa->matriz[y][x - 1] == casilla_vacia) {
+                                //reviso si la casilla siguiente es una patatapum_arriba, de ser así lo asesina
+                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_arriba)){
+                    matriz_vida[y][x-1] = 0;
+                    matriz_vida[y][x] = 0;
+                    mapa->matriz[y][x] = casilla_vacia;
+                    mapa->matriz[y][x-1] = casilla_vacia;
+                }
+                else if (x > 0 && mapa->matriz[y][x - 1] == casilla_vacia) {
                     mapa->matriz[y][x - 1] = zombie_flag; 
                     mapa->matriz[y][x] = casilla_vacia;    
                     matriz_vida[y][x-1] = matriz_vida[y][x];
                     matriz_vida[y][x] = 0;      
                 }
-                else if (x > 0 && (mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes)) {
+                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes)) {
                     matriz_vida[y][x-1] = matriz_vida[y][x-1] - 1;
                     if (matriz_vida[y][x-1] <= 0){
                         mapa->matriz[y][x-1] = casilla_vacia;
@@ -374,12 +397,11 @@ void generar_soles(int** matriz_soles, int turno, Mapa *mapa, Configuracion conf
 
     //parte que genera los soles aleatorios que caen del cielo
 
+    //genera una posicion aleatoria
+    int x_sol = rand()%mapa->columnas;
+    int y_sol = rand()%mapa->filas;
     //genera un sol aleatorio cada 10 turnos
     if(turno % 10 == 0){
-
-        //genera una posicion aleatoria
-        int x_sol = rand()%mapa->columnas;
-        int y_sol = rand()%mapa->filas;
 
         //coloca un sol en el lugar previamente colocado
         matriz_soles[y_sol][x_sol] = matriz_soles[y_sol][x_sol] + 1;
@@ -422,4 +444,26 @@ void imprimir_matriz_soles(int** matriz_soles, Mapa *mapa){
         printf("\n");
     }
 
+}
+
+//funcion comportamiento patatapum
+void patatapum_comportamiento(Mapa *mapa,int turno){
+
+
+    //veo de arriba a abajo
+    for (int y = 0; y < mapa->filas; y++) {
+        
+        // veo de izquierda a derecha
+        for (int x = 0; x < mapa->columnas; x++) {
+
+            //si una patatapum ha estado abajo por 10 turnos
+            if(mapa->matriz[y][x] == patatapum_abajo && turno == 10){
+
+                //la sube
+                mapa->matriz[y][x] = patatapum_arriba;
+
+            }
+
+        }
+    }
 }
