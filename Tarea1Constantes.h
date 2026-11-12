@@ -43,3 +43,9 @@ void imprimir_mapa(const Mapa *mapa);
 #define costo_patatapum 150
 
 int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles);
+
+// guardamos el estado actual de la matriz en un archivo de texto
+int guardar_mapa(const char *nombre_archivo, const Mapa *mapa);
+
+// redimensionamos la matriz manteniendo las casillas existentes
+int redimensionar_mapa(Mapa *mapa, int nuevas_filas, int nuevas_columnas);
