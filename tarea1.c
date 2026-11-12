@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Tarea1Constantes.h"
+#include <time.h>
 
 // busca el archivo Logica.txt y guarda los valores
 Configuracion cargar_configuracion(const char *nombre_archivo) {
@@ -46,9 +47,19 @@ Mapa cargar_mapa(const char *nombre_archivo) {
         exit(EXIT_FAILURE);
     }
 
-    // lee la primera linea donde vienen las dimensiones de las filas y columna
-    if (fscanf(fp, "%d %d", &mapa.filas, &mapa.columnas) != 2) {
-        printf("Error: Formato de dimisiones invalido en el archivo de mapa. \n");
+    // busca la palabra "MAPA" en el archivo para asegurarse de que el formato es correcto
+    char palabra[50];
+    int encontrado = 0; // bandera para saber si se encontro la palabra "mapa"
+    while (fscanf(fp, "%49s", palabra) == 1) {
+        if (strcasecmp(palabra, "MAPA") == 0) {
+            encontrado = 1;
+            break;
+        }
+    }
+
+    // lee las dimensiones del mapa y verifica si se pudo leer correctamente
+    if (!encontrado || fscanf(fp, "%d %d", &mapa.filas, &mapa.columnas) != 2) { // si no se encontro la palabra "mapa" o no se pudieron leer las dimensiones, se muestra un error
+        printf("Error: Formato de mapa invalido en el archivo. \n");
         fclose(fp);
         exit(EXIT_FAILURE);
     }
@@ -228,3 +239,47 @@ int redimensionar_mapa(Mapa *mapa, int nuevas_filas, int nuevas_columnas) {
     return 1;
 }
 
+// funcion para generar un mapa aleatorio con las dimensiones dadas
+Mapa generar_mapa_aleatorio(int filas, int columnas) {   
+    Mapa mapa;
+    mapa.filas = filas;
+    mapa.columnas = columnas;
+
+    // inicializa la semilla para la generación de números aleatorios
+    srand((unsigned int)time(NULL));
+
+    // reserva memoria para el arreglo de filas
+    mapa.matriz = (int **)malloc(filas * sizeof(int *));
+    if (mapa.matriz == NULL) {
+        printf("Error de memoria al asignar las filas del mapa aleatorio.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // reserva memoria para las columnas de cada fila
+    for (int i = 0; i < filas; i++) {
+        mapa.matriz[i] = (int *)malloc(columnas * sizeof(int));
+        if (mapa.matriz[i] == NULL) {
+            printf("Error de memoria al asignar la columna %d del mapa aleatorio.\n", i);
+            for (int k = 0; k < i; k++) free(mapa.matriz[k]);
+            free(mapa.matriz);
+            exit(EXIT_FAILURE);
+        }
+    
+        // llena la matriz con valores aleatorios entre 0 y 4
+        for (int j = 0; j < columnas; j++) {
+            int elemento = casilla_vacia; // valor por defecto para la casilla
+            int probabilidad = rand() % 100; // genera un número aleatorio entre 0 y 99
+
+            if (j == columnas - 1 && probabilidad < 20) {
+                elemento = zombie_basico; // 20% de probabilidad de colocar un zombie en la última columna
+            }
+            else if (j < columnas-1 && probabilidad < 10) {
+                elemento = obstaculo; // 10% de probabilidad de colocar un obstáculo en las demás columnas
+            }
+
+            mapa.matriz[i][j] = elemento; // asigna el valor a la casilla correspondiente
+        }
+    }
+
+    return mapa;
+} 
