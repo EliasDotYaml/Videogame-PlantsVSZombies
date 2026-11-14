@@ -13,6 +13,10 @@
 #define guisante 9
 #define patatapum_abajo 10
 #define patatapum_arriba 11
+#define cometumbas 12
+#define zombie_cono 13
+#define zombie_cubo 14
+
 
 // estructura para los datos de config.txt
 typedef struct {
@@ -40,7 +44,8 @@ void imprimir_mapa(const Mapa *mapa);
 #define costo_girasol 50
 #define costo_lanzaguisantes 100
 #define costo_nuez 50
-#define costo_patatapum 150
+#define costo_patatapum 25
+#define costo_cometumbas 75
 
 int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles);
 
