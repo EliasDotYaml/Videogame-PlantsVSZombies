@@ -173,6 +173,8 @@ int guardar_mapa(const char *nombre_archivo, const Mapa *mapa) {
         return 0;
     }
 
+    fprintf(fp, "MAPA\n"); // se escribe MAPA al inicio del archivo
+
     // escribimos las dimensiones actuales
     fprintf(fp, "%d %d\n", mapa->filas, mapa->columnas);
 
