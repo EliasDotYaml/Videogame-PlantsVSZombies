@@ -608,7 +608,7 @@ int main(int argc, char *argv[]) {
         }
 
         // Textos de interfaz
-        char textoSoles[16];
+        char textoSoles[5];
         snprintf(textoSoles, sizeof(textoSoles), "%d", contadorSoles);
         SDL_SetRenderDrawColor(renderizador, 0, 0, 0, 255);
         int escala = 5;
