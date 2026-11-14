@@ -295,7 +295,7 @@ int main(int argc, char *argv[]) {
                         break;
 
                     case SDL_SCANCODE_G:
-                        guardar_mapa("PartidaGuardada.txt", &mapa);
+                        guardar_mapa("PartidaGuardada.txt", &mapa, config);
                         SDL_Log("La partida se ha guardado");
                         jugando = false;
                         break;
