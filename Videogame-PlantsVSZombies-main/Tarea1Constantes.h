@@ -50,12 +50,12 @@ void imprimir_mapa(const Mapa *mapa);
 int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles);
 
 // guardamos el estado actual de la matriz en un archivo de texto
-int guardar_mapa(const char *nombre_archivo, const Mapa *mapa);
+int guardar_mapa(const char *nombre_archivo, const Mapa *mapa,Configuracion config);
 
 // redimensionamos la matriz manteniendo las casillas existentes
 int redimensionar_mapa(Mapa *mapa, int nuevas_filas, int nuevas_columnas);
 
 // funcion para generar un mapa aleatorio con las dimensiones dadas
 // ejemplo: Mapa mapa = generar_mapa_aleatorio(5, 10) genera un mapa de 5 filas y 10 columnas
-// para guardar el mapa generado en un archivo de texto se puede usar la funcion guardar_mapa("DimensionesMapa.txt", &mapa)
+// para guardar el mapa generado en un archivo de texto se puede usar la funcion guardar_mapa("Logica.txt", &mapa)
 Mapa generar_mapa_aleatorio(int filas, int columnas);
