@@ -43,10 +43,9 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
     int continua = 0; 
 
     // reemplaza la variable suelta zombies_ronda por el contorl completo de fases
-    EstadoRondas estado_rondas = iniciar_estado_rondas(config)
+    EstadoRondas estado_rondas = iniciar_estado_rondas(config);
 
-    //la cantidad de zombies que spawnean por ronda
-    int zombies_ronda = 20+(ronda-1)*10;
+    
 
 
     //mientras aun no se gana o se pierde se sigue jugando
@@ -106,7 +105,7 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
 
         if (estado_rondas.fase_actual == fase_oleada && turno % 3 == 0 && estado_rondas.zombies_por_spawnear > 0) {
             int generados = spawnear_zombies(mapa, matriz_vidas, config, estado_rondas.ronda_actual);
-            zombies_ronda -= generados;
+            estado_rondas.zombies_por_spawnear -= generados;
         }
 
         turno++;
