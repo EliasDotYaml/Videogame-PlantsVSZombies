@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
             if (evento.type == SDL_EVENT_KEY_DOWN && !evento.key.repeat) {
                 switch (evento.key.scancode) {
                     case SDL_SCANCODE_E:
-                        mapa = cargar_mapa("PartidaGuardada.txt");
+                        mapa = cargar_mapa("PartidaGuardada.txt", &contador soles); // le agrege que cargue los soles
                         inicio = false;
                         break;
 
@@ -256,6 +256,7 @@ int main(int argc, char *argv[]) {
 
     // Variables de estado de la partida
     int resultadoPartida = 0;           // 0 = en curso, 1 = victoria, 2 = derrota
+    EstadoRondas estado_rondas = iniciar_estado_rondas(config): // controla en que fase estamos
     int turno = 1;
     int turno_disparo = 1;
     int turnos_por_paso_zombie = 1;
@@ -374,7 +375,7 @@ int main(int argc, char *argv[]) {
                             break;
 
                         case SDL_SCANCODE_G:
-                            guardar_mapa("PartidaGuardada.txt", &mapa, config);
+                            guardar_mapa("PartidaGuardada.txt", &mapa, config, contadorSoles); // le agregue que guarde los soles
                             SDL_Log("La partida se ha guardado");
                             jugando = false;
                             break;
@@ -418,7 +419,7 @@ int main(int argc, char *argv[]) {
                                     palaActiva = false;
                                     reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoDesplantar);
                                 }
-                            } else if (plantaSeleccionada != 0) {
+                            } else if (plantaSeleccionada != 0 && puede_plantar(&estado_rondas)) { // solo permite plantar si hay una planta elegida y esta en la fase de preparacion o descanso
                                 if (plantaSeleccionada == 12) {
                                     if (matriz_tumba[f][c] > 0) {
                                         int plantado = colocar_planta(&mapa, matriz_vida_juego, f, c, 12, &contadorSoles);
@@ -556,6 +557,12 @@ int main(int argc, char *argv[]) {
 
             // 3. Logica por turnos
             if (tiempo_actual - ultimo_tiempo >= TIEMPO_TURNO) {
+                actualizar_estado_rondas(&estado_rondas, &mapa, config); // actualiza el temporizador de preparacion/descanso y verifica si murieron todos los zombies
+                // solo genera zombies si estamos en medio de una oleada y aun quedan zobies por salir
+                if (estado_rondas.fase_actual == fase_oleada && estado_rondas.zombies_por_spawnear > 0) {
+                    int generados = spawnear_zombies(&mapa, matriz_vida_juego, config, estado_rondas.rondas_actual);
+                    estado_rondas.zombies_por_spawnear -= generados;
+                }    
                 bool tenia_papapum[mapa.filas][mapa.columnas];
                 int mapa_antes[mapa.filas][mapa.columnas];
 
