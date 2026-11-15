@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     // Cargar configuracion usando las funciones existentes de la tarea1
     Configuracion config = cargar_configuracion("Logica.txt");
     Mapa mapa = {0};
+    int contadorSoles = config.soles_iniciales;
     SDL_Event evento;
 
     SDL_Texture *texturaJardin = cargarTextura(renderizador, "Fotografias/Jardin.jpg");
@@ -266,7 +267,7 @@ int main(int argc, char *argv[]) {
     const Uint64 TIEMPO_GUISANTE = 350;   // Menor valor = guisantes más rápidos
     const Uint64 TIEMPO_DISPARO = 2000;   // Intervalo en ms entre disparos
 
-    int contadorSoles = 5000; // Soles iniciales
+    
     int plantaSeleccionada = 0; // 0 = ninguna seleccionada
     bool palaActiva = false;    // false = pala en su hueco, true = pala en mano
 
@@ -560,7 +561,7 @@ int main(int argc, char *argv[]) {
                 actualizar_estado_rondas(&estado_rondas, &mapa, config); // actualiza el temporizador de preparacion/descanso y verifica si murieron todos los zombies
                 // solo genera zombies si estamos en medio de una oleada y aun quedan zobies por salir
                 if (estado_rondas.fase_actual == fase_oleada && estado_rondas.zombies_por_spawnear > 0) {
-                    int generados = spawnear_zombies(&mapa, matriz_vida_juego, config, estado_rondas.rondas_actual);
+                    int generados = spawnear_zombies(&mapa, matriz_vida_juego, config, estado_rondas.ronda_actual);
                     estado_rondas.zombies_por_spawnear -= generados;
                 }    
                 bool tenia_papapum[mapa.filas][mapa.columnas];
