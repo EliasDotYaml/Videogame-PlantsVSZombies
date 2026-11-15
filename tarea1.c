@@ -6,7 +6,7 @@
 
 // busca el archivo Logica.txt y guarda los valores
 Configuracion cargar_configuracion(const char *nombre_archivo) {
-    Configuracion config = {5, 10, 100, 3, 2, 30, 20, 200};
+    Configuracion config = {5, 10, 100, 3, 2, 30, 20, 5000};
   
     // se intenta abrir el archivo en modo lectura "r"
     FILE *fp = fopen(nombre_archivo, "r");
