@@ -26,6 +26,9 @@ Configuracion cargar_configuracion(const char *nombre_archivo) {
         else if (strcasecmp(clave, "resistencia_casa") == 0) config.resistencia_casa = valor;
         else if (strcasecmp(clave, "frecuencia_sol") == 0) config.frecuencia_sol = valor;
         else if (strcasecmp(clave, "frecuencia_disparo") == 0) config.frecuencia_disparo = valor;
+        else if (strcasecmp(clave, "tiempo_preparacion") == 0) config.tiempo_preparacion = valor;
+        else if (strcasecmp(clave, "tiempo_descanso") == 0) config.tiempo_descanso = valor;
+        else if (strcasecmp(clave, "soles_iniciales") == 0) config.soles_iniciales = valor;
     }
 
     // se cierra el archivo
@@ -252,13 +255,9 @@ Mapa generar_mapa_aleatorio(int filas, int columnas) {
     mapa.filas = filas;
     mapa.columnas = columnas;
 
-    // inicializa la semilla para la generación de números aleatorios
-    srand((unsigned int)time(NULL));
-
     // reserva memoria para el arreglo de filas
     mapa.matriz = (int **)malloc(filas * sizeof(int *));
     if (mapa.matriz == NULL) {
-        printf("Error de memoria al asignar las filas del mapa aleatorio.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -266,7 +265,6 @@ Mapa generar_mapa_aleatorio(int filas, int columnas) {
     for (int i = 0; i < filas; i++) {
         mapa.matriz[i] = (int *)malloc(columnas * sizeof(int));
         if (mapa.matriz[i] == NULL) {
-            printf("Error de memoria al asignar la columna %d del mapa aleatorio.\n", i);
             for (int k = 0; k < i; k++) free(mapa.matriz[k]);
             free(mapa.matriz);
             exit(EXIT_FAILURE);
@@ -277,10 +275,7 @@ Mapa generar_mapa_aleatorio(int filas, int columnas) {
             int elemento = casilla_vacia; // valor por defecto para la casilla
             int probabilidad = rand() % 100; // genera un número aleatorio entre 0 y 99
 
-            if (j == columnas - 1 && probabilidad < 20) {
-                elemento = zombie_basico; // 20% de probabilidad de colocar un zombie en la última columna
-            }
-            else if (j < columnas-1 && probabilidad < 10) {
+            if (j < columnas-1 && probabilidad < 10) {
                 elemento = obstaculo; // 10% de probabilidad de colocar un obstáculo en las demás columnas
             }
 
@@ -290,3 +285,75 @@ Mapa generar_mapa_aleatorio(int filas, int columnas) {
 
     return mapa;
 } 
+
+// logica de fases: preparacion -> oleadas -> descanso
+
+EstadoRondas iniciar_estado_rondas(Configuracion config) {
+    EstadoRondas estado;
+    estado.fase_actual = fase_preparacion;
+    estado.ronda_actual = 1;
+    estado.tiempo_restante_fase = config.tiempo_preparacion;
+    estado.zombies_por_spawnear = 0;
+    return estado;
+}
+
+// devuelve 1 si el jugador tiene permitido plantar, 0 si esta en oleada
+int puede_plantar(const EstadoRondas *estado) {
+    if (estado == NULL) return 1;
+    return (estado ->fase_actual == fase_preparacion || estado->fase_actual == fase_descanso);
+}
+
+int hay_zombies_en_mapa(const Mapa *mapa) {
+    if (mapa == NULL || mapa->matriz == NULL) return 0;
+    for (int y = 0; y < mapa->matriz; y++) {
+        for (int x = 0; x < mapa->columnas; x++) {
+            int celda = mapa->matriz[y][x];
+            if (celda == zombie_basico || celda == zombie_flag || celda == zombie_cono || celda == zombie_cubo) {
+                return 1;
+            }
+        }
+    }
+    return 0;   
+}
+
+// Debe llamarse una vez por turno (o cada segundo en SDL) para avanzar las fases
+void actualizar_estado_rondas(EstadoRondas *estado, const Mapa *mapa, Configuracion config) {
+    if (estado == NULL || mapa == NULL) return;
+
+    if (estado->fase_actual == FASE_PREPARACION) {
+        estado->tiempo_restante_fase--;
+        if (estado->tiempo_restante_fase <= 0) {
+            // Termina la preparacion: empieza la Oleada 1
+            estado->fase_actual = FASE_OLEADA;
+            estado->zombies_por_spawnear = 10 + (estado->ronda_actual - 1) * 5;
+        }
+    } 
+    else if (estado->fase_actual == FASE_OLEADA) {
+        // La oleada termina SOLO cuando ya no quedan zombies por salir Y todos en el mapa murieron
+        if (estado->zombies_por_spawnear <= 0 && !hay_zombies_en_mapa(mapa)) {
+            if (estado->ronda_actual >= config.max_oleadas) {
+                estado->fase_actual = FASE_VICTORIA;
+            } else {
+                estado->fase_actual = FASE_DESCANSO;
+                estado->tiempo_restante_fase = config.tiempo_descanso;
+            }
+        }
+    } 
+    else if (estado->fase_actual == FASE_DESCANSO) {
+        estado->tiempo_restante_fase--;
+        if (estado->tiempo_restante_fase <= 0) {
+            // Termina el descanso: pasamos a la siguiente ronda y comienza la nueva oleada
+            estado->ronda_actual++;
+            estado->fase_actual = FASE_OLEADA;
+            estado->zombies_por_spawnear = 10 + (estado->ronda_actual - 1) * 5;
+        }
+    }
+}
+
+// Wrapper seguro que respeta la regla de no plantar durante las oleadas
+int colocar_planta_en_ronda(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles, const EstadoRondas *estado) {
+    if (!puede_plantar(estado)) {
+        return 0; // Bloqueado: estamos en medio de una oleada
+    }
+    return colocar_planta(mapa, matriz_vida, fila, columna, tipo_planta, soles_disponibles);
+}
