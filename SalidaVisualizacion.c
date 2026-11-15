@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
             if (evento.type == SDL_EVENT_KEY_DOWN && !evento.key.repeat) {
                 switch (evento.key.scancode) {
                     case SDL_SCANCODE_E:
-                        mapa = cargar_mapa("PartidaGuardada.txt", &contador soles); // le agrege que cargue los soles
+                        mapa = cargar_mapa("PartidaGuardada.txt", &contadorSoles); // le agrege que cargue los soles
                         inicio = false;
                         break;
 
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
 
     // Variables de estado de la partida
     int resultadoPartida = 0;           // 0 = en curso, 1 = victoria, 2 = derrota
-    EstadoRondas estado_rondas = iniciar_estado_rondas(config): // controla en que fase estamos
+    EstadoRondas estado_rondas = iniciar_estado_rondas(config); // controla en que fase estamos
     int turno = 1;
     int turno_disparo = 1;
     int turnos_por_paso_zombie = 1;
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]) {
                             break;
 
                         case SDL_SCANCODE_G:
-                            guardar_mapa("PartidaGuardada.txt", &mapa, config, contadorSoles); // le agregue que guarde los soles
+                            guardar_mapa("PartidaGuardada.txt", &mapa, contadorSoles); // le agregue que guarde los soles
                             SDL_Log("La partida se ha guardado");
                             jugando = false;
                             break;
@@ -575,7 +575,6 @@ int main(int argc, char *argv[]) {
 
                 generar_soles(matriz_sol, turno, &mapa, config);
                 mover_zombies(&mapa, matriz_vida_juego, turno);
-                spawnear_zombies(&mapa, matriz_vida_juego, config, 1);
                 patatapum_comportamiento(&mapa, turno);
 
                 // Actualizar velocidad y entrada de zombies sin reiniciar si la fila está detenida
@@ -671,7 +670,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 int estado = verificar_victoria(&mapa);
-                if (estado == 1) {
+                if (estado_rondas.fase_actual == fase_victoria) {
                     resultadoPartida = 1;
                     MIX_StopTrack(pistaMusica, 0);
                     reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoVictoria);
