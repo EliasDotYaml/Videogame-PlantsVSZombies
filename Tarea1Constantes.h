@@ -37,7 +37,7 @@ typedef struct {
 
 // funciones
 Configuracion cargar_configuracion(const char *nombre_archivo);
-Mapa cargar_mapa(const char *nombre_archivo);
+Mapa cargar_mapa(const char *nombre_archivo, int soles_disponibles); 
 void liberar_mapa(Mapa *mapa);
 void imprimir_mapa(const Mapa *mapa);
 
@@ -50,7 +50,7 @@ void imprimir_mapa(const Mapa *mapa);
 int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles);
 
 // guardamos el estado actual de la matriz en un archivo de texto
-int guardar_mapa(const char *nombre_archivo, const Mapa *mapa,Configuracion config);
+int guardar_mapa(const char *nombre_archivo, const Mapa *mapa,Configuracion config, int soles_disponibles);
 
 // redimensionamos la matriz manteniendo las casillas existentes
 int redimensionar_mapa(Mapa *mapa, int nuevas_filas, int nuevas_columnas);
