@@ -42,6 +42,9 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
     //si esta variable es 1 el juego se detiene
     int continua = 0; 
 
+    // reemplaza la variable suelta zombies_ronda por el contorl completo de fases
+    EstadoRondas estado_rondas = iniciar_estado_rondas(config)
+
     //la cantidad de zombies que spawnean por ronda
     int zombies_ronda = 20+(ronda-1)*10;
 
@@ -49,6 +52,9 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
     //mientras aun no se gana o se pierde se sigue jugando
     while(continua != 1 && continua != 2){
         printf("\n--- TURNO %d ---\n", turno);
+
+        // avanza el contador de preparacion/descanso o detecta el fin de la oleada actual
+        actualizar_estado_rondas(&estado_rondas, mapa, config);
 
         //genero los soles
         generar_soles(matriz_soles,turno, mapa, config);
@@ -92,14 +98,14 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
             continua = 2;
             printf("DERROTA");
         } 
-        else if (estado == 1 && zombies_ronda <= 0) {
+        else if (estado_rondas.fase_actual == fase_victoria) {
         
             continua = 1;
             printf("VICTORIA");
         }
 
-        if (turno % 3 == 0 && zombies_ronda > 0) {
-            int generados = spawnear_zombies(mapa, matriz_vidas, config, ronda);
+        if (estado_rondas.fase_actual == fase_oleada && turno % 3 == 0 && estado_rondas.zombies_por_spawnear > 0) {
+            int generados = spawnear_zombies(mapa, matriz_vidas, config, estado_rondas.ronda_actual);
             zombies_ronda -= generados;
         }
 
