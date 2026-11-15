@@ -19,4 +19,4 @@ tarea2.o: tarea2.c Tarea1Constantes.h
 	$(CC) $(CFLAGS) -c tarea2.c
 
 clean:
-	rm -f *.o *.gch prueba partida_guradada.txt
+	rm -f *.o *.gch prueba PartidaGuardada.txt
