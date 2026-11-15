@@ -6,7 +6,7 @@
 
 // busca el archivo Logica.txt y guarda los valores
 Configuracion cargar_configuracion(const char *nombre_archivo) {
-    Configuracion config = {0, 0, 0, 0, 0};
+    Configuracion config = {5, 10, 100, 3, 2, 30, 20, 200};
   
     // se intenta abrir el archivo en modo lectura "r"
     FILE *fp = fopen(nombre_archivo, "r");
@@ -182,7 +182,7 @@ int guardar_mapa(const char *nombre_archivo, const Mapa *mapa, int soles_disponi
         return 0;
     }
 
-    fprintf(fp, "SOLES%d", soles_disponibles); //
+    fprintf(fp, "SOLES%d\n", soles_disponibles); //
     fprintf(fp, "MAPA\n"); // se escribe MAPA al inicio del archivo
     fprintf(fp, "%d %d\n", mapa->filas, mapa->columnas); // escribimos las dimensiones actuales
 
