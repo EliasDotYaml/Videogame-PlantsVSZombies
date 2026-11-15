@@ -4,6 +4,7 @@
 //logica general
 int** matriz_vida(Mapa *mapa, Configuracion config);
 int verificar_victoria (Mapa *mapa);
+void imprimir_matriz_vida(int** matriz_vida, Mapa *mapa);
 
 //logica guisantes
 int** matriz_guisantes(Mapa *mapa);

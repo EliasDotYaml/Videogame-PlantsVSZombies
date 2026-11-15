@@ -10,6 +10,7 @@
 //logica general
 int** matriz_vida(Mapa *mapa, Configuracion config);
 int verificar_victoria (Mapa *mapa);
+void imprimir_matriz_vida(int** matriz_vida, Mapa *mapa);
 
 //logica guisantes
 int** matriz_guisantes(Mapa *mapa);
@@ -34,7 +35,7 @@ int** matriz_tumbas(Mapa *mapa) ;
 void cometumbas_comportamiento(Mapa *mapa, int** matriz_tumbas,int turno);
 void imprimir_matriz_tumbas(int** matriz_tumbas, Mapa *mapa);
 
-void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_guisantes, int** matriz_soles, int** matriz_vida, int ronda, int** matriz_tumbas){
+void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_guisantes, int** matriz_soles, int** matriz_vidas, int ronda, int** matriz_tumbas){
 
     printf("\n bucle de juego \n");
 
@@ -56,13 +57,13 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
         cometumbas_comportamiento(mapa, matriz_tumbas ,turno);
 
         //muevo los zombies o atacan
-        mover_zombies(mapa, matriz_vida, turno);
+        mover_zombies(mapa, matriz_vidas, turno);
 
         //los lanzaguisantes revisan si hay un zombie al cual atacar en su fila y si es así atacan dependiendo de su cooldown de ataque
         buscar_zombies_atacar(mapa, turno, config, matriz_guisantes);
 
         //mueve los guisantes o impactan si tocan un zombie
-        mover_guisantes(mapa, matriz_vida, matriz_guisantes);
+        mover_guisantes(mapa, matriz_vidas , matriz_guisantes);
 
         //sube a las patatapum necesarias
         patatapum_comportamiento(mapa, turno);
@@ -78,6 +79,9 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
 
         //imprime el mapa de las tumba
         imprimir_matriz_tumbas(matriz_tumbas, mapa);
+
+        //imprime el mapa de la vida
+        imprimir_matriz_vida(matriz_vidas, mapa);
 
         
         
@@ -95,7 +99,7 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
         }
 
         if (turno % 3 == 0 && zombies_ronda > 0) {
-            int generados = spawnear_zombies(mapa, matriz_vida, config, ronda);
+            int generados = spawnear_zombies(mapa, matriz_vidas, config, ronda);
             zombies_ronda -= generados;
         }
 
@@ -109,10 +113,10 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
 
     //libero las matrices dinamicas creadas
     for (int y = 0; y < mapa->filas; y++) {
-        free(matriz_vida[y]);
+        free(matriz_vidas[y]);
         free(matriz_guisantes[y]);
     }
-    free(matriz_vida);
+    free(matriz_vidas);
     free(matriz_guisantes);
 
     printf("\n memoria liberada correctamente \n");
@@ -127,7 +131,8 @@ int main() {
 
     printf("=== probando lectura y memoria de mapa ===\n");
     // se carga la matriz del mapa de mapa.txt
-    Mapa mapa = cargar_mapa("Logica.txt");
+    int soles_disponibles = 0;
+    Mapa mapa = cargar_mapa("Logica.txt", &soles_disponibles);
     printf("Dimensiones del jardin: %d filas x %d columnas\n", mapa.filas, mapa.columnas);
     printf("matriz cargada en ram:\n");
     // se muestra el mapa en pantalla

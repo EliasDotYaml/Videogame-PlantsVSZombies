@@ -30,19 +30,16 @@ int** matriz_vida(Mapa *mapa, Configuracion config) {
                 matriz_vida[y][x] = 2*config.resistencia_zombie;
             } 
             else if (entidad == zombie_cono) {
-                matriz_vida[y][x] = 3*config.resistencia_zombie;
+                matriz_vida[y][x] = 4*config.resistencia_zombie;
             } 
             else if (entidad == zombie_cubo) {
-                matriz_vida[y][x] = 4*config.resistencia_zombie;
+                matriz_vida[y][x] = 6*config.resistencia_zombie;
             } 
             else if (entidad == lanzaguisantes || entidad == girasol) {
                 matriz_vida[y][x] = 5; 
             }
             else if (entidad == nuez) {
-                matriz_vida[y][x] = 15; 
-            }
-            else if (entidad == obstaculo) {
-                matriz_vida[y][x] = 99;
+                matriz_vida[y][x] = 50; 
             }
             else if(entidad == patatapum_abajo || entidad == patatapum_arriba){
                 matriz_vida[y][x] = 8;
@@ -134,7 +131,7 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
 
                 }
                 //reviso si la casilla siguiente es una planta para atacarla si ese es el caso
-                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
+                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
                     
                     //le baja vida a la planta
                     matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
@@ -142,6 +139,7 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
                     //si la planta esta muerta la destruye
                     if (matriz_vida[y][x-1] <= 0){
                         mapa->matriz[y][x-1] = casilla_vacia;
+                        matriz_vida[y][x-1] = 0;
                         
                     }
 
@@ -174,10 +172,11 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
                     mapa->matriz[y][x] = casilla_vacia;
                     mapa->matriz[y][x-1] = casilla_vacia;
                 }
-                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
+                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
                     matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
                     if (matriz_vida[y][x-1] <= 0){
                         mapa->matriz[y][x-1] = casilla_vacia;
+                        matriz_vida[y][x-1] = 0;
                     }
                 }
                 else if (turno % 2 != 0){
@@ -198,10 +197,11 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
                     mapa->matriz[y][x] = casilla_vacia;
                     mapa->matriz[y][x-1] = casilla_vacia;
                 }
-                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
+                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
                     matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
                     if (matriz_vida[y][x-1] <= 0){
                         mapa->matriz[y][x-1] = casilla_vacia;
+                        matriz_vida[y][x-1] = 0;
                     }
                 }
                 else if (turno % 2 != 0){
@@ -222,10 +222,11 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
                     mapa->matriz[y][x] = casilla_vacia;
                     mapa->matriz[y][x-1] = casilla_vacia;
                 }
-                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
+                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
                     matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
                     if (matriz_vida[y][x-1] <= 0){
                         mapa->matriz[y][x-1] = casilla_vacia;
+                        matriz_vida[y][x-1] = 0;
                     }
                 }
                 else if (turno % 2 != 0){
@@ -295,7 +296,7 @@ void buscar_zombies_atacar (Mapa *mapa, int turno, Configuracion config, int** m
 
 //funcion que mueve los guisantes hacia los zombies y les hace daño
 void mover_guisantes (Mapa *mapa ,int** matriz_vida, int** matriz_guisantes){
-
+    
     //veo de arriba a abajo
     for (int y = 0; y < mapa->filas; y++) {
         
@@ -564,7 +565,7 @@ int** matriz_tumbas(Mapa *mapa) {
 }
 
 //comportamiento cometumbas
-void cometumbas_comportamiento(Mapa *mapa, int** matriz_tumbas,int turno){
+void cometumbas_comportamiento(Mapa *mapa, int** matriz_tumbas,int turno, int** matriz_vida){
 
 
     if(turno%4 == 0){
@@ -578,6 +579,7 @@ void cometumbas_comportamiento(Mapa *mapa, int** matriz_tumbas,int turno){
 
                     mapa->matriz[y][x] = casilla_vacia;
                     matriz_tumbas[y][x] = casilla_vacia;
+                    matriz_vida[y][x] = 0;
                     
                 }
 
@@ -596,6 +598,24 @@ void imprimir_matriz_tumbas(int** matriz_tumbas, Mapa *mapa){
         for(int x = 0; x < mapa->columnas; x++){
 
             printf("%i ", matriz_tumbas[y][x]);
+
+
+        }
+        printf("\n");
+    }
+
+}
+
+//imprimir matriz vida
+void imprimir_matriz_vida(int** matriz_vida, Mapa *mapa){
+
+    printf("matriz vida");
+    printf("\n");
+
+    for(int y = 0; y < mapa->filas; y++){
+        for(int x = 0; x < mapa->columnas; x++){
+
+            printf("%i ", matriz_vida[y][x]);
 
 
         }

@@ -37,7 +37,7 @@ typedef struct {
 
 // funciones
 Configuracion cargar_configuracion(const char *nombre_archivo);
-Mapa cargar_mapa(const char *nombre_archivo, int soles_disponibles); 
+Mapa cargar_mapa(const char *nombre_archivo, int *soles_disponibles); 
 void liberar_mapa(Mapa *mapa);
 void imprimir_mapa(const Mapa *mapa);
 

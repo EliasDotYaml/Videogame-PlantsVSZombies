@@ -138,7 +138,7 @@ int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tip
             break;
         case nuez:
             costo = costo_nuez;
-            vida_inicial = 5; // vida inicial de la nuez
+            vida_inicial = 50; // vida inicial de la nuez
             break;
         case patatapum_abajo:
         case patatapum_arriba:
@@ -148,6 +148,7 @@ int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tip
         case cometumbas:
             costo = costo_cometumbas;
             vida_inicial = 8;
+            break;
         default:
             return 0; // error si el tipo de planta no es válido
     }
