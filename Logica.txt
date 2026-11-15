@@ -3,6 +3,9 @@ resistencia_zombie 10
 resistencia_casa 100
 frecuencia_sol 3
 frecuencia_disparo 2
+tiempo_preparacion 30
+tiempo_descanso 20
+soles_iniciales 200
 
 Mapa
 5 9 
