@@ -34,7 +34,7 @@ Configuracion cargar_configuracion(const char *nombre_archivo) {
 }
 
 // funcion que lee el mapa y pide la memoria dinamica
-Mapa cargar_mapa(const char *nombre_archivo) {
+Mapa cargar_mapa(const char *nombre_archivo, int *soles_disponibles) {
     Mapa mapa;
     mapa.filas = 0;
     mapa.columnas = 0;
@@ -44,14 +44,16 @@ Mapa cargar_mapa(const char *nombre_archivo) {
     FILE *fp = fopen(nombre_archivo, "r");
     if (fp == NULL) {
         printf("Error: No se puedo abrir el archivo del mapa '%s'\n", nombre_archivo);
-        exit(EXIT_FAILURE);
+        return mapa; // retorna matriz = NULL para usar el respaldo
     }
 
     // busca la palabra "MAPA" en el archivo para asegurarse de que el formato es correcto
     char palabra[50];
     int encontrado = 0; // bandera para saber si se encontro la palabra "mapa"
     while (fscanf(fp, "%49s", palabra) == 1) {
-        if (strcasecmp(palabra, "MAPA") == 0) {
+        if (strcasecmp(palabra, "SOLES") == 0) {
+            fscanf(fp, "%d", soles_disponibles);
+        } else if (strcasecmp(palabra, "MAPA") == 0) {
             encontrado = 1;
             break;
         }
@@ -143,6 +145,9 @@ int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tip
             costo = costo_patatapum;
             vida_inicial = 8; // vida inicial del patatapum
             break;
+        case cometumbas:
+            costo = costo_cometumbas;
+            vida_inicial = 8;
         default:
             return 0; // error si el tipo de planta no es válido
     }
@@ -160,7 +165,7 @@ int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tip
 }
 
 // se guarda la matriz actual en un archivo con el formato estandar
-int guardar_mapa(const char *nombre_archivo, const Mapa *mapa,Configuracion config) {
+int guardar_mapa(const char *nombre_archivo, const Mapa *mapa, int soles_disponibles) {
     if (mapa == NULL || mapa->matriz == NULL) {
         printf("Error: el mapa no esta iniciado\n");
         return 0;
@@ -173,10 +178,9 @@ int guardar_mapa(const char *nombre_archivo, const Mapa *mapa,Configuracion conf
         return 0;
     }
 
+    fprintf(fp, "SOLES%d", soles_disponibles); //
     fprintf(fp, "MAPA\n"); // se escribe MAPA al inicio del archivo
-
-    // escribimos las dimensiones actuales
-    fprintf(fp, "%d %d\n", mapa->filas, mapa->columnas);
+    fprintf(fp, "%d %d\n", mapa->filas, mapa->columnas); // escribimos las dimensiones actuales
 
     // escribimos el valor de cada casilla
     for (int i = 0; i < mapa->filas; i++) {
