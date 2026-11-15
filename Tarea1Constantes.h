@@ -17,7 +17,13 @@
 #define zombie_cono 13
 #define zombie_cubo 14
 
-
+// fase del sistema de rondas
+typedef enum {
+    fase_preparacion   = 0,     // tiempo inicial: se puede plantar y no salen zombies
+    fase_oleada        = 1,     // salen zombies y no se puede plantar
+    fase_descanso      = 2,     // todos los zombies de la ronda murieron, se puede volver a plantar
+    fase_victoria      = 3      // se superaron todas las oleadas
+} FaseJuego;
 // estructura para los datos de config.txt
 typedef struct {
     int max_oleadas;            // cantidad maxima de oleadas
@@ -25,9 +31,18 @@ typedef struct {
     int resistencia_casa;       // vida de la casa antes de perder
     int frecuencia_sol;         // cada cuantos turnos se generan soles
     int frecuencia_disparo;     // frecuencia a la que disparan las plantas
-
+    int tiempo_preparacion;     // duracion de la fase inicial para plantar
+    int tiempo_descanso;        // duracion del descanso entre oleadas
+    int soles_iniciales;        // soles con los que empieza el jugador
 } Configuracion;
 
+// estructura para controlar el estado entre rondas sin alterar el Mapa
+typedef struct {
+    FaseJuego fase_actual;       
+    int ronda_actual;            
+    int tiempo_restante_fase;   // contador regresivo para preparacion/descanso
+    int zombies_por_spawnear;   // zombies pendientes por aparecer en la oleada actual
+} EstadoRondas;
 // estructura para la matriz del mapa
 typedef struct {
     int filas;
@@ -59,3 +74,9 @@ int redimensionar_mapa(Mapa *mapa, int nuevas_filas, int nuevas_columnas);
 // ejemplo: Mapa mapa = generar_mapa_aleatorio(5, 10) genera un mapa de 5 filas y 10 columnas
 // para guardar el mapa generado en un archivo de texto se puede usar la funcion guardar_mapa("Logica.txt", &mapa)
 Mapa generar_mapa_aleatorio(int filas, int columnas);
+
+EstadoRondas iniciar_estado_rondas(Configuracion config);
+int puede_plantar(const EstadoRondas *estado);
+int hay_zombies_en_mapa(const Mapa *mapa);
+void actualizar_estado_rondas(EstadoRondas *estado, const Mapa *mapa, Configuracion config);
+int colocar_planta_en_ronda(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles, const EstadoRondas *estado);
