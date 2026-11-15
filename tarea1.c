@@ -160,7 +160,7 @@ int colocar_planta(Mapa *mapa, int **matriz_vida, int fila, int columna, int tip
 }
 
 // se guarda la matriz actual en un archivo con el formato estandar
-int guardar_mapa(const char *nombre_archivo, const Mapa *mapa,Configuracion config) {
+int guardar_mapa(const char *nombre_archivo, const Mapa *mapa) {
     if (mapa == NULL || mapa->matriz == NULL) {
         printf("Error: el mapa no esta iniciado\n");
         return 0;

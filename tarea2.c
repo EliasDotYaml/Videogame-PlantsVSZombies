@@ -5,6 +5,8 @@
 //funcion para una matriz invisible que controla la vida de todas las entidades
 int** matriz_vida(Mapa *mapa, Configuracion config) {
     
+
+
     //reservo la memoria de la matriz
     int **matriz_vida = (int **)malloc(mapa->filas * sizeof(int *));
     
@@ -26,6 +28,12 @@ int** matriz_vida(Mapa *mapa, Configuracion config) {
             } 
             else if (entidad == zombie_flag) {
                 matriz_vida[y][x] = 2*config.resistencia_zombie;
+            } 
+            else if (entidad == zombie_cono) {
+                matriz_vida[y][x] = 3*config.resistencia_zombie;
+            } 
+            else if (entidad == zombie_cubo) {
+                matriz_vida[y][x] = 4*config.resistencia_zombie;
             } 
             else if (entidad == lanzaguisantes || entidad == girasol) {
                 matriz_vida[y][x] = 5; 
@@ -101,6 +109,7 @@ int** matriz_soles(Mapa *mapa) {
 //funcion que en cada turno mueve a los zombies o los hace comer
 void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
 
+
     //veo de arriba a abajo
     for (int y = 0; y < mapa->filas; y++) {
         
@@ -140,7 +149,7 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
 
                 //esto esta aquí para que siempre coma pero solo en uno de cada 2 turnos avance
                 else if (turno % 2 != 0){
-                    return;
+                    continue;
                 }
 
                 // reviso si la casilla siguiente al zombie basico esta vacia en cuyo caso:
@@ -157,9 +166,7 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
 
                 }
             }
-
-
-            // no comento esta parte porque es como exactamente la misma logica de antes pero para el zombie abanderado
+            // lo mismo pero con el abanderado
             if (mapa->matriz[y][x] == zombie_flag) {
                 if (x > 0 && (mapa->matriz[y][x-1] == patatapum_arriba)){
                     matriz_vida[y][x-1] = 0;
@@ -167,21 +174,23 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
                     mapa->matriz[y][x] = casilla_vacia;
                     mapa->matriz[y][x-1] = casilla_vacia;
                 }
+                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
+                    matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
+                    if (matriz_vida[y][x-1] <= 0){
+                        mapa->matriz[y][x-1] = casilla_vacia;
+                    }
+                }
+                else if (turno % 2 != 0){
+                    continue;
+                }
                 else if (x > 0 && mapa->matriz[y][x - 1] == casilla_vacia) {
                     mapa->matriz[y][x - 1] = zombie_flag; 
                     mapa->matriz[y][x] = casilla_vacia;    
                     matriz_vida[y][x-1] = matriz_vida[y][x];
                     matriz_vida[y][x] = 0;      
                 }
-                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes || mapa->matriz[y][x-1] == cometumbas)) {
-                    matriz_vida[y][x-1] = matriz_vida[y][x-1] - 1;
-                    if (matriz_vida[y][x-1] <= 0){
-                        mapa->matriz[y][x-1] = casilla_vacia;
-                        matriz_vida[y][x-1] = 0;
-                    }
-                }
             }
-            //ahora con zombie cono
+            // lo mismo pero con el cono
             if (mapa->matriz[y][x] == zombie_cono) {
                 if (x > 0 && (mapa->matriz[y][x-1] == patatapum_arriba)){
                     matriz_vida[y][x-1] = 0;
@@ -189,21 +198,23 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
                     mapa->matriz[y][x] = casilla_vacia;
                     mapa->matriz[y][x-1] = casilla_vacia;
                 }
+                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
+                    matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
+                    if (matriz_vida[y][x-1] <= 0){
+                        mapa->matriz[y][x-1] = casilla_vacia;
+                    }
+                }
+                else if (turno % 2 != 0){
+                    continue;
+                }
                 else if (x > 0 && mapa->matriz[y][x - 1] == casilla_vacia) {
                     mapa->matriz[y][x - 1] = zombie_cono; 
                     mapa->matriz[y][x] = casilla_vacia;    
                     matriz_vida[y][x-1] = matriz_vida[y][x];
                     matriz_vida[y][x] = 0;      
                 }
-                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes || mapa->matriz[y][x-1] == cometumbas)) {
-                    matriz_vida[y][x-1] = matriz_vida[y][x-1] - 1;
-                    if (matriz_vida[y][x-1] <= 0){
-                        mapa->matriz[y][x-1] = casilla_vacia;
-                        matriz_vida[y][x-1] = 0;
-                    }
-                }
             }
-            //ahora con zombie cubo ( profe soy un vago pero funciona)
+            // lo mismo pero con el cubo
             if (mapa->matriz[y][x] == zombie_cubo) {
                 if (x > 0 && (mapa->matriz[y][x-1] == patatapum_arriba)){
                     matriz_vida[y][x-1] = 0;
@@ -211,18 +222,20 @@ void mover_zombies(Mapa *mapa, int** matriz_vida,int turno) {
                     mapa->matriz[y][x] = casilla_vacia;
                     mapa->matriz[y][x-1] = casilla_vacia;
                 }
+                if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes|| mapa->matriz[y][x-1] == cometumbas)) {
+                    matriz_vida[y][x-1] = matriz_vida[y][x-1] - 2;
+                    if (matriz_vida[y][x-1] <= 0){
+                        mapa->matriz[y][x-1] = casilla_vacia;
+                    }
+                }
+                else if (turno % 2 != 0){
+                    continue;
+                }
                 else if (x > 0 && mapa->matriz[y][x - 1] == casilla_vacia) {
                     mapa->matriz[y][x - 1] = zombie_cubo; 
                     mapa->matriz[y][x] = casilla_vacia;    
                     matriz_vida[y][x-1] = matriz_vida[y][x];
                     matriz_vida[y][x] = 0;      
-                }
-                else if (x > 0 && (mapa->matriz[y][x-1] == patatapum_abajo ||mapa->matriz[y][x-1] == nuez || mapa->matriz[y][x-1] == girasol || mapa->matriz[y][x-1] == lanzaguisantes || mapa->matriz[y][x-1] == cometumbas)) {
-                    matriz_vida[y][x-1] = matriz_vida[y][x-1] - 1;
-                    if (matriz_vida[y][x-1] <= 0){
-                        mapa->matriz[y][x-1] = casilla_vacia;
-                        matriz_vida[y][x-1] = 0;
-                    }
                 }
             }
         }
@@ -262,7 +275,7 @@ void buscar_zombies_atacar (Mapa *mapa, int turno, Configuracion config, int** m
                 while(index<9 && encontrar_zombie == 0){
 
                     //si la casilla es un zombie lanza un guisante y deja de buscar
-                    if(mapa->matriz[y][index]==zombie_basico || mapa->matriz[y][index]==zombie_flag || mapa->matriz[y][index]==obstaculo){
+                    if(mapa->matriz[y][index]==zombie_basico || mapa->matriz[y][index]==zombie_flag  || mapa->matriz[y][index]==zombie_cono  || mapa->matriz[y][index]==zombie_cubo ){
 
                         matriz_guisantes[y][x] = guisante ;
                         encontrar_zombie = 1;
@@ -300,7 +313,7 @@ void mover_guisantes (Mapa *mapa ,int** matriz_vida, int** matriz_guisantes){
                 
                 // Revisamos si hay un zombie en la casilla actual
                 //si es asi
-                if(mapa->matriz[y][x] == zombie_basico || mapa->matriz[y][x] == zombie_flag){
+                if(mapa->matriz[y][x] == zombie_basico || mapa->matriz[y][x] == zombie_flag || mapa->matriz[y][x] == zombie_cono || mapa->matriz[y][x] == zombie_cubo){
                     
                     //destruyo el guisante
                     matriz_guisantes[y][x] = casilla_vacia;
@@ -317,7 +330,7 @@ void mover_guisantes (Mapa *mapa ,int** matriz_vida, int** matriz_guisantes){
                 //exactamente lo mismo pero lo pruebo para el zombie de en frente
                 //lo hago 2 veces por si requiero como cambiar el orden de las funciones en main.c
                 //ya sufri por no pensar en ese casos
-                else if(mapa->matriz[y][x+1] == zombie_basico || mapa->matriz[y][x+1] == zombie_flag || mapa->matriz[y][x+1] == obstaculo){
+                else if(mapa->matriz[y][x+1] == zombie_basico || mapa->matriz[y][x+1] == zombie_flag || mapa->matriz[y][x+1] == zombie_cono || mapa->matriz[y][x+1] == zombie_cubo){
                     matriz_guisantes[y][x] = casilla_vacia;
                     matriz_vida[y][x+1] = matriz_vida[y][x+1] - 5;
                     if (matriz_vida[y][x+1] <= 0){
@@ -400,7 +413,7 @@ int spawnear_zombies(Mapa *mapa, int** matriz_vida, Configuracion config, int ro
             int probabilidad_zombie = rand() % 20 + ronda * 2;
 
             //probabilidades
-            if (probabilidad_aparicion < (5 + ronda * 2)) {
+            if (probabilidad_aparicion < (25 + ronda * 2)) {
                 if (probabilidad_zombie < 10) {
                     mapa->matriz[r][ultima_col] = zombie_basico;
                     matriz_vida[r][ultima_col] = config.resistencia_zombie;
