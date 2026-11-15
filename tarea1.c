@@ -182,7 +182,7 @@ int guardar_mapa(const char *nombre_archivo, const Mapa *mapa, int soles_disponi
         return 0;
     }
 
-    fprintf(fp, "SOLES%d\n", soles_disponibles); //
+    fprintf(fp, "SOLES %d\n", soles_disponibles); //
     fprintf(fp, "MAPA\n"); // se escribe MAPA al inicio del archivo
     fprintf(fp, "%d %d\n", mapa->filas, mapa->columnas); // escribimos las dimensiones actuales
 
@@ -305,7 +305,7 @@ int puede_plantar(const EstadoRondas *estado) {
 
 int hay_zombies_en_mapa(const Mapa *mapa) {
     if (mapa == NULL || mapa->matriz == NULL) return 0;
-    for (int y = 0; y < mapa->matriz; y++) {
+    for (int y = 0; y < mapa->filas; y++) {
         for (int x = 0; x < mapa->columnas; x++) {
             int celda = mapa->matriz[y][x];
             if (celda == zombie_basico || celda == zombie_flag || celda == zombie_cono || celda == zombie_cubo) {
@@ -320,31 +320,31 @@ int hay_zombies_en_mapa(const Mapa *mapa) {
 void actualizar_estado_rondas(EstadoRondas *estado, const Mapa *mapa, Configuracion config) {
     if (estado == NULL || mapa == NULL) return;
 
-    if (estado->fase_actual == FASE_PREPARACION) {
+    if (estado->fase_actual == fase_preparacion) {
         estado->tiempo_restante_fase--;
         if (estado->tiempo_restante_fase <= 0) {
             // Termina la preparacion: empieza la Oleada 1
-            estado->fase_actual = FASE_OLEADA;
+            estado->fase_actual = fase_oleada;
             estado->zombies_por_spawnear = 10 + (estado->ronda_actual - 1) * 5;
         }
     } 
-    else if (estado->fase_actual == FASE_OLEADA) {
+    else if (estado->fase_actual == fase_oleada) {
         // La oleada termina SOLO cuando ya no quedan zombies por salir Y todos en el mapa murieron
         if (estado->zombies_por_spawnear <= 0 && !hay_zombies_en_mapa(mapa)) {
             if (estado->ronda_actual >= config.max_oleadas) {
-                estado->fase_actual = FASE_VICTORIA;
+                estado->fase_actual = fase_victoria;
             } else {
-                estado->fase_actual = FASE_DESCANSO;
+                estado->fase_actual = fase_descanso;
                 estado->tiempo_restante_fase = config.tiempo_descanso;
             }
         }
     } 
-    else if (estado->fase_actual == FASE_DESCANSO) {
+    else if (estado->fase_actual == fase_descanso) {
         estado->tiempo_restante_fase--;
         if (estado->tiempo_restante_fase <= 0) {
             // Termina el descanso: pasamos a la siguiente ronda y comienza la nueva oleada
             estado->ronda_actual++;
-            estado->fase_actual = FASE_OLEADA;
+            estado->fase_actual = fase_oleada;
             estado->zombies_por_spawnear = 10 + (estado->ronda_actual - 1) * 5;
         }
     }
