@@ -189,7 +189,11 @@ int guardar_mapa(const char *nombre_archivo, const Mapa *mapa, int soles_disponi
     // escribimos el valor de cada casilla
     for (int i = 0; i < mapa->filas; i++) {
         for (int j = 0; j < mapa->columnas; j++) {
-            fprintf(fp, "%d ", mapa->matriz[i][j]);
+            int valor = mapa->matriz[i][j];
+            if (valor == cometumbas) {
+                valor = obstaculo;
+            }
+            fprintf(fp, "%d ", valor);
         }
         fprintf(fp, "\n");
     }
