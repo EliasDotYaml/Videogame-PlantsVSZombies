@@ -1,16 +1,16 @@
 cantidad_oleadas 5
 resistencia_zombie 10
 resistencia_casa 100
-frecuencia_sol 3
+frecuencia_sol 5
 frecuencia_disparo 2
 tiempo_preparacion 6
 tiempo_descanso 20
-soles_iniciales 5000
+soles_iniciales 600
 
 Mapa
-5 9 
-0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 0
+5 10 
+0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0

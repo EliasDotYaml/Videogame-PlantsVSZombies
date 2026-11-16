@@ -102,7 +102,7 @@ void ronda_jugable(Mapa *mapa, int turno, Configuracion config, int** matriz_gui
             continua = 1;
             printf("VICTORIA");
         }
-
+        
         if (estado_rondas.fase_actual == fase_oleada && turno % 3 == 0 && estado_rondas.zombies_por_spawnear > 0) {
             int generados = spawnear_zombies(mapa, matriz_vidas, config, estado_rondas.ronda_actual);
             estado_rondas.zombies_por_spawnear -= generados;

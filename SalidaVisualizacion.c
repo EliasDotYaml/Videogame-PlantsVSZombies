@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
                         break;
                         
                         case SDL_SCANCODE_R:
-                        mapa = generar_mapa_aleatorio(5, 9);
+                        mapa = generar_mapa_aleatorio(5, 10);
                         inicio = false;
                         break;
                         
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
         // Respaldo si se presiono E pero aun no existe PartidaGuardada.txt
         if (mapa.matriz == NULL) {
             SDL_Log("No se encontro partida guardada, generando mapa aleatorio...");
-            mapa = generar_mapa_aleatorio(5, 9);
+            mapa = generar_mapa_aleatorio(5, 10);
         }
         
         // Matrices de la Tarea 2
@@ -352,7 +352,6 @@ int main(int argc, char *argv[]) {
             if (evento.type == SDL_EVENT_QUIT) {
                 jugando = false;
             }
-
             if (evento.type == SDL_EVENT_KEY_DOWN && !evento.key.repeat) {
                 if (evento.key.scancode == SDL_SCANCODE_ESCAPE) {
                     jugando = false;
@@ -437,7 +436,7 @@ int main(int argc, char *argv[]) {
                                 }
                                 
                             // solo permite plantar si hay una planta elegida y esta en la fase de preparacion o descanso
-                            } else if (plantaSeleccionada != 0 && puede_plantar(&estado_rondas)) { 
+                            } else if (plantaSeleccionada != 0 && puede_plantar(&estado_rondas) && c < mapa.columnas - 1) { 
                                 if (plantaSeleccionada == 12) {
                                     if (matriz_tumba[f][c] > 0) {
                                         int plantado = colocar_planta(&mapa, matriz_vida_juego, f, c, 12, &contadorSoles);
@@ -474,7 +473,7 @@ int main(int argc, char *argv[]) {
                     }
                     //Encerramos al jugador en las dimensiones de matriz
                     if (siguienteFila >= 1 && siguienteFila <= mapa.filas &&
-                        siguienteColumna >= 1 && siguienteColumna <= mapa.columnas &&
+                        siguienteColumna >= 1 && siguienteColumna <= mapa.columnas-1 &&
                         movilidad[siguienteFila - 1][siguienteColumna - 1] == 0) {
                         filaJugador = siguienteFila;
                         columnaJugador = siguienteColumna;
@@ -599,6 +598,8 @@ int main(int argc, char *argv[]) {
                 SDL_RenderPresent(renderizador);
 
                 // solo genera zombies si estamos en medio de una oleada y aun quedan zombies por salir
+
+
                 if (estado_rondas.fase_actual == fase_oleada && estado_rondas.zombies_por_spawnear > 0) {
                     int generados = spawnear_zombies(&mapa, matriz_vida_juego, config, estado_rondas.ronda_actual);
                     estado_rondas.zombies_por_spawnear -= generados;

@@ -273,7 +273,7 @@ void buscar_zombies_atacar (Mapa *mapa, int turno, Configuracion config, int** m
                 encontrar_zombie = 0;
                 
                 //mientras no se haya encontrado un zombie y no se haya llegado al final
-                while(index<9 && encontrar_zombie == 0){
+                while(index<mapa->columnas && encontrar_zombie == 0){
 
                     //si la casilla es un zombie lanza un guisante y deja de buscar
                     if(mapa->matriz[y][index]==zombie_basico || mapa->matriz[y][index]==zombie_flag  || mapa->matriz[y][index]==zombie_cono  || mapa->matriz[y][index]==zombie_cubo ){
@@ -363,7 +363,7 @@ int verificar_victoria (Mapa *mapa){
     //si este valor es cero no hay derrota y si es uno si lo hay
     int derrota = 0;
 
-    for(int m = 0; m < 5; m++){
+    for(int m = 0; m < mapa->filas; m++){
         
         //verifico si algun zombie esta en la ultima fila, si es así perdemos todos
         if(mapa->matriz[m][0] == zombie_basico || mapa->matriz[m][0] == zombie_flag || mapa->matriz[m][0] == zombie_cono || mapa->matriz[m][0] == zombie_cubo){
@@ -376,8 +376,8 @@ int verificar_victoria (Mapa *mapa){
     int victoria = 1;
 
     //si no hay ningun zombie ganamos yeiiii
-    for(int x=0; x<9; x++){
-        for(int y=0; y<5; y++){
+    for(int x=0; x<mapa->columnas; x++){
+        for(int y=0; y<mapa->filas; y++){
         
             if(mapa->matriz[y][x] == zombie_basico || mapa->matriz[y][x] == zombie_flag || mapa->matriz[y][x] == zombie_cubo || mapa->matriz[y][x] == zombie_cono){
                 victoria = 0;
