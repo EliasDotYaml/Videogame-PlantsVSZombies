@@ -91,7 +91,7 @@ Mapa cargar_mapa(const char *nombre_archivo, int *soles_disponibles) {
 
         // se leen los numeros de la fila actual y se guarda en la matriz
         for (int j = 0; j < mapa.columnas; j++) {
-            fscanf(fp, "%d", &mapa.matriz[i][j] != 1) {
+            if (fscanf(fp, "%d", &mapa.matriz[i][j]) != 1) {
                 printf("Error: datos incompletos en el mapa.\n");
                 for (int k = 0; k <= i; k++) free(mapa.matriz[k]);
                 free(mapa.matriz);
