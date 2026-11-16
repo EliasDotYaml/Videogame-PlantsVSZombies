@@ -13,6 +13,8 @@
 bool jugando = true;
 bool inicio = true;
 bool mostrar_aviso_oleada = false;
+bool empezo_oleada = false;
+
 SDL_Window *ventana = NULL;
 SDL_Renderer *renderizador = NULL;
 
@@ -61,6 +63,35 @@ int main(int argc, char *argv[]) {
     
     SDL_Texture *texturaJardin = cargarTextura(renderizador, "Fotografias/Jardin.png");
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Teclado y ventana
     while (inicio) {
         
@@ -103,10 +134,14 @@ int main(int argc, char *argv[]) {
             SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_NONE);  // Desactiva la transparencia para futuras imagenes
             
             int escalaMenu = 6;
+            int escalaAvisos = 3;
             SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);
             SDL_SetRenderScale(renderizador, escalaMenu, escalaMenu);
-            SDL_RenderDebugText(renderizador, 20, 50, "Presione E para cargar partida");
-            SDL_RenderDebugText(renderizador, 20, 90, "Presione R para empezar nueva partida");
+            SDL_RenderDebugText(renderizador, 12, 50, "Presione E para cargar partida");
+            SDL_RenderDebugText(renderizador, 12, 90, "Presione R para empezar nueva partida");
+            SDL_SetRenderScale(renderizador, escalaAvisos, escalaAvisos);
+            SDL_RenderDebugText(renderizador, 40, 250, "Recordatorios: Una vez inicie la oleada no podra plantar hasta que esta");
+            SDL_RenderDebugText(renderizador, 160, 260, "finalice, priorice dejar algunos girasoles al inicio");
             SDL_SetRenderScale(renderizador, 1, 1);
             
             SDL_RenderPresent(renderizador);
@@ -171,6 +206,22 @@ int main(int argc, char *argv[]) {
         }
     }
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Cargar assets
     SDL_Texture *texturaLanzaguisantesPaquete = cargarTextura(renderizador, "Fotografias/Lanzaguisantes_Paquete.png");
     SDL_Texture *texturaGirasolPaquete = cargarTextura(renderizador, "Fotografias/Girasol_Paquete.png");
@@ -292,6 +343,25 @@ int main(int argc, char *argv[]) {
     Uint64 ultimo_tiempo_mordisco = inicioIntro;
     Uint64 tiempo_inicio_oleada = 0; // Usa el mismo tipo de dato que 'tiempo_actual'
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Bucle principal de juego
     while (jugando) {
         Uint64 tiempo_actual = SDL_GetTicks();
@@ -347,6 +417,22 @@ int main(int argc, char *argv[]) {
             }
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // Eventos de teclado y ventana
         while (SDL_PollEvent(&evento)) {
             if (evento.type == SDL_EVENT_QUIT) {
@@ -387,13 +473,18 @@ int main(int argc, char *argv[]) {
                                 reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoAgarrarPala);
                             }
                             break;
-
+                            
                         case SDL_SCANCODE_G:
                             guardar_mapa("PartidaGuardada.txt", &mapa, contadorSoles); // le agregue que guarde los soles
                             SDL_Log("La partida se ha guardado");
                             jugando = false;
                             break;
-
+                            
+                        case SDL_SCANCODE_F:
+                            saltar_fase(&estado_rondas);
+                            empezo_oleada = true;
+                            break;
+                            
                         case SDL_SCANCODE_1:
                             plantaSeleccionada = 6; // Lanzaguisantes
                             palaActiva = false;
@@ -488,6 +579,21 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // La logica de la partida solo avanza mientras no haya terminado (resultadoPartida == 0)
         if (resultadoPartida == 0) {
@@ -587,8 +693,9 @@ int main(int argc, char *argv[]) {
                 actualizar_estado_rondas(&estado_rondas, &mapa, config);
 
                     // Se activa únicamente en el turno exacto en que empieza la oleada
-                    if (fase_anterior != fase_oleada && estado_rondas.fase_actual == fase_oleada) {
+                    if ((fase_anterior != fase_oleada && estado_rondas.fase_actual == fase_oleada) ||  empezo_oleada== true) {
                         mostrar_aviso_oleada = true;
+                        empezo_oleada = false;
                         tiempo_inicio_oleada = tiempo_actual;
 
                         reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoOleadaAviso);
@@ -860,17 +967,17 @@ int main(int argc, char *argv[]) {
 
         // Calcular progreso de interpolación de los guisantes
         float progreso_guisante = (float)(tiempo_actual - ultimo_tiempo_guisante) / (float)TIEMPO_GUISANTE;
-        if (progreso_guisante > 1.0f) progreso_guisante = 1.0f;
+        if (progreso_guisante > 1) progreso_guisante = 1;
 
         // Recorremos la matriz real mapa.matriz siguiendo el struct de tarea1.h
         for (int i = 0; i < mapa.filas; i++) {
             for (int j = 0; j < mapa.columnas; j++) {
 
-                float offset_zombie_x = ANCHO_CASILLA * (1.0f - progreso_zombie[i][j]);
+                float offset_zombie_x = ANCHO_CASILLA * (1 - progreso_zombie[i][j]);
 
-                float offset_guisante_x = 0.0f;
+                float offset_guisante_x = 0;
                 if (guisante_deslizando[i][j]) {
-                    offset_guisante_x = -ANCHO_CASILLA * (1.0f - progreso_guisante);
+                    offset_guisante_x = -ANCHO_CASILLA * (1 - progreso_guisante);
                 }
 
                 //Funciones constantes para determinar el tamaño y distancia de cada imagen a insertar
@@ -1039,6 +1146,7 @@ int main(int argc, char *argv[]) {
         SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);
         SDL_SetRenderScale(renderizador, (float)escalanumeros, (float)escalanumeros);
         SDL_RenderDebugText(renderizador, 250, 7, "'espacio' para plantar o desplantar (1 vez) 'g' para guardar partida");
+        SDL_RenderDebugText(renderizador, 400, 20, "'f' para activar oleada antes");
         SDL_RenderDebugText(renderizador, 10, 110, "Key_1");
         SDL_RenderDebugText(renderizador, 10, 190, "Key_2");
         SDL_RenderDebugText(renderizador, 10, 270, "Key_3");
