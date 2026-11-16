@@ -478,7 +478,7 @@ int main(int argc, char *argv[]) {
                             for (int i = 0; i < mapa.filas; i++) {
                                 for (int j = 0; j < mapa.columnas; j++) {
                                     if (matriz_tumba[i][j] == obstaculo && mapa.matriz[i][j] == casilla_vacia) {
-                                        mapa.matriz[i][j] = obstaculos
+                                        mapa.matriz[i][j] = obstaculo
                                     }
                                 }
                             }
