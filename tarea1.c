@@ -66,7 +66,7 @@ Mapa cargar_mapa(const char *nombre_archivo, int *soles_disponibles) {
     if (!encontrado || fscanf(fp, "%d %d", &mapa.filas, &mapa.columnas) != 2) { // si no se encontro la palabra "mapa" o no se pudieron leer las dimensiones, se muestra un error
         printf("Error: Formato de mapa invalido en el archivo. \n");
         fclose(fp);
-        exit(EXIT_FAILURE);
+        return mapa;
     }
 
     // reserva memoria para el arreglo de filas
@@ -91,7 +91,16 @@ Mapa cargar_mapa(const char *nombre_archivo, int *soles_disponibles) {
 
         // se leen los numeros de la fila actual y se guarda en la matriz
         for (int j = 0; j < mapa.columnas; j++) {
-            fscanf(fp, "%d", &mapa.matriz[i][j]);
+            fscanf(fp, "%d", &mapa.matriz[i][j] != 1) {
+                printf("Error: datos incompletos en el mapa.\n");
+                for (int k = 0; k <= i; k++) free(mapa.matriz[k]);
+                free(mapa.matriz);
+                mapa.matriz = NULL;
+                mapa.filas = 0;
+                mapa.columnas = 0;
+                fclose(fp);
+                return mapa;
+            }
         }
     }
 
