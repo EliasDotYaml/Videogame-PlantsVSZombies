@@ -38,7 +38,7 @@ void reproducirEfecto(MIX_Track *pistas[], int totalPistas, int *indiceActual, M
 
 int main(int argc, char *argv[]) {
 
-    // Inicializar semilla aleatoria para generar mapas distintos en cada ejecucion
+    //esta parte se encarga de generar una "semilla" nueva cada vez que se inicie, esto para el rand que se utiliza en generar_mapa_aleatorio
     srand((unsigned int)time(NULL));
 
     // Inicializar SDL y crear ventana
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     int contadorSoles = config.soles_iniciales;
     SDL_Event evento;
 
-    SDL_Texture *texturaJardin = cargarTextura(renderizador, "Fotografias/Jardin.jpg");
+    SDL_Texture *texturaJardin = cargarTextura(renderizador, "Fotografias/Jardin.png");
 
     // Teclado y ventana
     while (inicio) {
@@ -94,6 +94,13 @@ int main(int argc, char *argv[]) {
         }
         SDL_RenderClear(renderizador);
         SDL_RenderTexture(renderizador, texturaJardin, NULL, NULL);
+
+        // Oscurecer el fondo del juego con una capa semitransparente
+        SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_BLEND); // Activa la mezcla de transparencia 
+        SDL_SetRenderDrawColor(renderizador, 0, 0, 0, 150);            // Color negro con opacidad media (150 de 255)
+        SDL_FRect fondoFin = { 0, 0, anchuravent, alturavent };
+        SDL_RenderFillRect(renderizador, &fondoFin);                   // Dibuja el rectángulo oscuro encima del tablero
+        SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_NONE);  // Desactiva la transparencia para futuras imagenes
 
         int escalaMenu = 6;
         SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);
@@ -130,24 +137,27 @@ int main(int argc, char *argv[]) {
 
     // Matriz auxiliar para mover el fichero del jugador
     int movilidad[mapa.filas][mapa.columnas];
-    // Guarda hasta qué milisegundo se ve la explosión
+
+    // Guarda hasta qué milisegundo se ve la explosión, pose previa al disparo y retener el guisante para luego disparar
     Uint64 fin_explosion[mapa.filas][mapa.columnas];
-    // Guarda hasta qué milisegundo se ve la pose previa al disparo
     Uint64 fin_disparo[mapa.filas][mapa.columnas];
-    // Retienen el guisante durante la animación previa para soltarlo justo después
     Uint64 tiempo_salida_guisante[mapa.filas][mapa.columnas];
     int guisante_pendiente[mapa.filas][mapa.columnas];
+    
     // Cuenta cuántos turnos lleva una Cometumbas comiéndose una tumba
     int turnos_cometumba[mapa.filas][mapa.columnas];
+
     // Control continuo del deslizamiento de zombies (de 0.0 a 1.35 por casilla)
     float progreso_zombie[mapa.filas][mapa.columnas];
     Uint64 duracion_deslizamiento_zombie[mapa.filas][mapa.columnas];
     int turnos_zombie_en_celda[mapa.filas][mapa.columnas];
+
     // Indica si el guisante de esa celda se está deslizando desde la anterior
     bool guisante_deslizando[mapa.filas][mapa.columnas];
 
     for (int i = 0; i < mapa.filas; i++) {
         for (int j = 0; j < mapa.columnas; j++) {
+            //rellenamos matrices extras con 0
             movilidad[i][j] = 0;
             fin_explosion[i][j] = 0;
             fin_disparo[i][j] = 0;
@@ -162,10 +172,10 @@ int main(int argc, char *argv[]) {
     }
 
     // Cargar assets
-    SDL_Texture *texturaLanzaguisantesPaquete = cargarTextura(renderizador, "Fotografias/Lanzaguisantes_Paquete.jpg");
-    SDL_Texture *texturaGirasolPaquete = cargarTextura(renderizador, "Fotografias/Girasol_Paquete.jpg");
-    SDL_Texture *texturaNuezPaquete = cargarTextura(renderizador, "Fotografias/Nuez_Paquete.jpg");
-    SDL_Texture *texturaPapapumPaquete = cargarTextura(renderizador, "Fotografias/Papapum_Paquete.jpg");
+    SDL_Texture *texturaLanzaguisantesPaquete = cargarTextura(renderizador, "Fotografias/Lanzaguisantes_Paquete.png");
+    SDL_Texture *texturaGirasolPaquete = cargarTextura(renderizador, "Fotografias/Girasol_Paquete.png");
+    SDL_Texture *texturaNuezPaquete = cargarTextura(renderizador, "Fotografias/Nuez_Paquete.png");
+    SDL_Texture *texturaPapapumPaquete = cargarTextura(renderizador, "Fotografias/Papapum_Paquete.png");
     SDL_Texture *texturaCometumbasPaquete = cargarTextura(renderizador, "Fotografias/Cometumbas_Paquete.png");
     SDL_Texture *texturaCuentaSol = cargarTextura(renderizador, "Fotografias/GuardaSoles.png");
     SDL_Texture *texturaHuecoPala = cargarTextura(renderizador, "Fotografias/huecoPala.png");
@@ -230,10 +240,9 @@ int main(int argc, char *argv[]) {
     }
     int indicePista = 0;
 
+    //Cargamos sonidos
     MIX_Audio *musicaFondo = MIX_LoadAudio(mixer, "Audios/MusicaDia.mp3", false);
     MIX_Audio *SonidoInicio = MIX_LoadAudio(mixer, "Audios/Listos.mp3", true);
-
-    // Nuevos efectos
     MIX_Audio *sonidoPlantar = MIX_LoadAudio(mixer, "Audios/Plantar.mp3", true);
     MIX_Audio *sonidoDesplantar = MIX_LoadAudio(mixer, "Audios/DesplantarPala.mp3", true);
     MIX_Audio *sonidoAgarrarPala = MIX_LoadAudio(mixer, "Audios/AgarrarPala.mp3", true);
@@ -297,11 +306,12 @@ int main(int argc, char *argv[]) {
             }
 
             Uint64 transcurrido = tiempo_actual - inicioIntro;
-
             if (transcurrido < 2000) {
+                //Cambiamos las imagenes durante 2 segundos
                 int indiceFoto = (int)(transcurrido / 600);
                 if (indiceFoto > 2) indiceFoto = 2;
 
+                //renderizar y cuadrar
                 SDL_RenderClear(renderizador);
                 SDL_RenderTexture(renderizador, texturaJardin, NULL, NULL);
 
@@ -322,10 +332,12 @@ int main(int argc, char *argv[]) {
                 if (musicaFondo == NULL) {
                     SDL_Log("Error cargando musica: %s", SDL_GetError());
                 } else {
+                    //Establecemos musica
                     MIX_SetTrackAudio(pistaMusica, musicaFondo);
-                    MIX_SetTrackGain(pistaMusica, 0.6f);
+                    MIX_SetTrackGain(pistaMusica, 0.8);
 
                     SDL_PropertiesID opciones = SDL_CreateProperties();
+                    //-1 para bucle infinito
                     SDL_SetNumberProperty(opciones, MIX_PROP_PLAY_LOOPS_NUMBER, -1);
                     MIX_PlayTrack(pistaMusica, opciones);
                     SDL_DestroyProperties(opciones);
@@ -411,6 +423,7 @@ int main(int argc, char *argv[]) {
                             int c = columnaJugador - 1;
 
                             if (palaActiva) {
+                                //Validamos que haya una planta para desplantar al seleccionar pala
                                 int celda = mapa.matriz[f][c];
                                 if (celda == 5 || celda == 6 || celda == 7 || celda == 10 || celda == 11 || celda == 12) {
                                     mapa.matriz[f][c] = 0;
@@ -420,18 +433,20 @@ int main(int argc, char *argv[]) {
                                     palaActiva = false;
                                     reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoDesplantar);
                                 }
-                            } else if (plantaSeleccionada != 0 && puede_plantar(&estado_rondas)) { // solo permite plantar si hay una planta elegida y esta en la fase de preparacion o descanso
+                                
+                            // solo permite plantar si hay una planta elegida y esta en la fase de preparacion o descanso
+                            } else if (plantaSeleccionada != 0 && puede_plantar(&estado_rondas)) { 
                                 if (plantaSeleccionada == 12) {
                                     if (matriz_tumba[f][c] > 0) {
                                         int plantado = colocar_planta(&mapa, matriz_vida_juego, f, c, 12, &contadorSoles);
-
+                                        //Logica soles cometumbas
                                         if (plantado != 1 && contadorSoles >= 75) {
                                             mapa.matriz[f][c] = 12;
                                             matriz_vida_juego[f][c] = 100;
                                             contadorSoles -= 75;
                                             plantado = 1;
                                         }
-
+                                        //plantamos cometumbas
                                         if (plantado == 1) {
                                             turnos_cometumba[f][c] = 0;
                                             plantaSeleccionada = 0;
@@ -439,7 +454,9 @@ int main(int argc, char *argv[]) {
                                             reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoComerTumba);
                                         }
                                     }
-                                } else if (matriz_tumba[f][c] == 0) {
+                                } 
+                                //si no hay tumba podemos plantar
+                                else if (matriz_tumba[f][c] == 0) {
                                     int plantado = colocar_planta(&mapa, matriz_vida_juego, f, c, plantaSeleccionada, &contadorSoles);
                                     if (plantado == 1) {
                                         plantaSeleccionada = 0;
@@ -453,13 +470,14 @@ int main(int argc, char *argv[]) {
                         default:
                             break;
                     }
-
+                    //Encerramos al jugador en las dimensiones de matriz
                     if (siguienteFila >= 1 && siguienteFila <= mapa.filas &&
                         siguienteColumna >= 1 && siguienteColumna <= mapa.columnas &&
                         movilidad[siguienteFila - 1][siguienteColumna - 1] == 0) {
                         filaJugador = siguienteFila;
                         columnaJugador = siguienteColumna;
 
+                        //validamos que se recogio un sol y desplegamos su sonido
                         if (matriz_sol[filaJugador - 1][columnaJugador - 1] > 0) {
                             contadorSoles += 25;
                             matriz_sol[filaJugador - 1][columnaJugador - 1] = 0;
@@ -485,11 +503,12 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            // 1. Movimiento independiente y continuo de los guisantes
+            // Movimiento independiente y continuo de los guisantes
             if (tiempo_actual - ultimo_tiempo_guisante >= TIEMPO_GUISANTE) {
                 int guis_antes[mapa.filas][mapa.columnas];
                 for (int i = 0; i < mapa.filas; i++) {
                     for (int j = 0; j < mapa.columnas; j++) {
+                        //hace aparecer al guisante
                         guis_antes[i][j] = matriz_guis[i][j];
                     }
                 }
@@ -499,6 +518,7 @@ int main(int argc, char *argv[]) {
                 for (int i = 0; i < mapa.filas; i++) {
                     for (int j = 0; j < mapa.columnas - 1; j++) {
                         if (guis_antes[i][j] > 0 && matriz_guis[i][j] == 0 && matriz_guis[i][j + 1] == 0) {
+                            //si se cumple es porque impacto a algo
                             reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoImpactoGuisante);
                         }
                     }
@@ -506,6 +526,7 @@ int main(int argc, char *argv[]) {
 
                 for (int i = 0; i < mapa.filas; i++) {
                     for (int j = 0; j < mapa.columnas; j++) {
+                        //sigue deslizando
                         if (matriz_guis[i][j] > 0 && j > 0 && guis_antes[i][j - 1] > 0) {
                             guisante_deslizando[i][j] = true;
                         } else {
@@ -517,7 +538,7 @@ int main(int argc, char *argv[]) {
                 ultimo_tiempo_guisante = tiempo_actual;
             }
 
-            // 2. Anticipación y disparo de plantas
+            // Anticipación para imprimir png de disparo y disparo de plantas
             if (tiempo_actual - ultimo_tiempo_disparo >= TIEMPO_DISPARO) {
                 int guis_antes[mapa.filas][mapa.columnas];
                 for (int i = 0; i < mapa.filas; i++) {
@@ -528,6 +549,7 @@ int main(int argc, char *argv[]) {
 
                 buscar_zombies_atacar(&mapa, turno_disparo, config, matriz_guis);
 
+                //Ajustamos para que no se vea mas de una vez si no esta disparando
                 Uint64 anticipacion;
                 if (TIEMPO_DISPARO > 400) {
                     anticipacion = 350;
@@ -543,6 +565,7 @@ int main(int argc, char *argv[]) {
                             matriz_guis[i][j] = 0;
                             tiempo_salida_guisante[i][j] = tiempo_actual + anticipacion;
 
+                            //si hay lanzaguisantes
                             if (mapa.matriz[i][j] == 6) {
                                 fin_disparo[i][j] = tiempo_actual + anticipacion;
                             } else if (j > 0 && mapa.matriz[i][j - 1] == 6) {
@@ -556,88 +579,117 @@ int main(int argc, char *argv[]) {
                 ultimo_tiempo_disparo = tiempo_actual;
             }
 
-            // 3. Logica por turnos
+            // Logica por turnos
             if (tiempo_actual - ultimo_tiempo >= TIEMPO_TURNO) {
                 actualizar_estado_rondas(&estado_rondas, &mapa, config); // actualiza el temporizador de preparacion/descanso y verifica si murieron todos los zombies
-                // solo genera zombies si estamos en medio de una oleada y aun quedan zobies por salir
+
+                // solo genera zombies si estamos en medio de una oleada y aun quedan zombies por salir
                 if (estado_rondas.fase_actual == fase_oleada && estado_rondas.zombies_por_spawnear > 0) {
                     int generados = spawnear_zombies(&mapa, matriz_vida_juego, config, estado_rondas.ronda_actual);
                     estado_rondas.zombies_por_spawnear -= generados;
                 }    
+
                 bool tenia_papapum[mapa.filas][mapa.columnas];
+                //copia de la matriz original vacia
                 int mapa_antes[mapa.filas][mapa.columnas];
 
                 for (int i = 0; i < mapa.filas; i++) {
                     for (int j = 0; j < mapa.columnas; j++) {
+                        //devuelve false o true si hay... papapum
                         tenia_papapum[i][j] = (mapa.matriz[i][j] == 11);
                         mapa_antes[i][j] = mapa.matriz[i][j];
                     }
                 }
-
+                //llamo funciones tarea2
                 generar_soles(matriz_sol, turno, &mapa, config);
                 mover_zombies(&mapa, matriz_vida_juego, turno);
                 patatapum_comportamiento(&mapa, turno);
 
-                // Actualizar velocidad y entrada de zombies sin reiniciar si la fila está detenida
+                // Recorre todo el tablero celda por celda para actualizar la animación de desplazamiento
                 for (int i = 0; i < mapa.filas; i++) {
                     for (int j = 0; j < mapa.columnas; j++) {
+                        
+                        // Obtiene el código de lo que hay AHORA en la celda (i, j) después de mover_zombies
                         int actual = mapa.matriz[i][j];
+                        
+                        // Comprueba si corresponde a algún tipo de zombie
                         bool esZombieActual = (actual == 1 || actual == 2 || actual == 13 || actual == 14);
 
                         if (esZombieActual) {
+                            // Revisa qué había en esta misma celda ANTES de ejecutar mover_zombies
                             int antes = mapa_antes[i][j];
                             bool habiaZombieAqui = (antes == 1 || antes == 2 || antes == 13 || antes == 14);
-
                             bool veniaDeDerecha = false;
+
+                            // Si no estamos en el borde derecho del mapa, revisa si en la celda de la derecha (j + 1) había un zombie
                             if (j + 1 < mapa.columnas) {
                                 int derecha = mapa_antes[i][j + 1];
                                 veniaDeDerecha = (derecha == 1 || derecha == 2 || derecha == 13 || derecha == 14);
                             }
-
-                            // Verifica si toda la fila contigua de zombies realmente avanzó 1 casilla a la izquierda
+                            // Si había un zombie aquí Y otro justo a su derecha, puede que estén detenidos comiendo una planta,
+                            // o puede que toda la fila haya avanzado 1 casilla a la izquierda al mismo tiempo.
                             bool grupoDesplazado = false;
                             if (habiaZombieAqui && veniaDeDerecha) {
                                 int frenteGrupo = j;
+
+                                // Camina hacia la izquierda en el estado anterior (mapa_antes) para encontrar al primer zombie de la fila
                                 while (frenteGrupo > 0) {
                                     int izqAntes = mapa_antes[i][frenteGrupo - 1];
+
                                     if (izqAntes == 1 || izqAntes == 2 || izqAntes == 13 || izqAntes == 14) {
-                                        frenteGrupo--;
+                                        frenteGrupo--; // Sigue habiendo un zombie pegado adelante; seguimos buscando la punta
                                     } else {
-                                        break;
+                                        break; // Encontramos el inicio de la fila de zombies
                                     }
                                 }
+
+                                // Mira la casilla que está justo delante del líder del grupo en el mapa ACTUAL
                                 if (frenteGrupo > 0) {
                                     int delanteAhora = mapa.matriz[i][frenteGrupo - 1];
+                                    // Si ahora hay un zombie ahí, significa que el líder avanzó y arrastró a todo el grupo
                                     if (delanteAhora == 1 || delanteAhora == 2 || delanteAhora == 13 || delanteAhora == 14) {
                                         grupoDesplazado = true;
                                     }
                                 }
                             }
-
+            
+                            // Pasa aquí si el zombie acaba de llegar a esta casilla:
+                            // - si entró desde la derecha (veniaDeDerecha)
+                            // - si acaba de aparecer en el borde derecho (j == mapa.columnas - 1)
+                            // - si Había otro zombie aquí, pero toda la fila avanzó y este lo reemplazó (grupoDesplazado)
                             if ((!habiaZombieAqui && (veniaDeDerecha || j == mapa.columnas - 1)) || grupoDesplazado) {
-                                float progreso_inicial = 0.0f;
+                                int progreso_inicial = 0;
+
                                 if (veniaDeDerecha) {
+                                    // Hereda cuántos turnos le tomó cruzar la celda anterior para mantener una velocidad consistente
                                     if (turnos_zombie_en_celda[i][j + 1] > 0) {
                                         turnos_por_paso_zombie = turnos_zombie_en_celda[i][j + 1];
                                     }
-                                    if (progreso_zombie[i][j + 1] > 1.0f) {
-                                        progreso_inicial = progreso_zombie[i][j + 1] - 1.0f;
+                                    // Si la animación anterior se pasó un poco de 1 (100%), conserva ese excedente para que no dé tirones
+                                    if (progreso_zombie[i][j + 1] > 1) {
+                                        progreso_inicial = progreso_zombie[i][j + 1] - 1;
                                     }
                                 }
+
+                                // Calcula cuánto tiempo total debe durar el deslizamiento visual por esta nueva casilla
                                 duracion_deslizamiento_zombie[i][j] = TIEMPO_TURNO * turnos_por_paso_zombie;
+                                // Reinicia el progreso visual de esta celda (0 = recién entrando por la derecha, 1 = llegó al centro)
                                 progreso_zombie[i][j] = progreso_inicial;
+                                // Marca que el zombie lleva 1 turno en esta nueva casilla
                                 turnos_zombie_en_celda[i][j] = 1;
                             } else {
+                                // El zombie NO cambió de casilla en este turno (sigue caminando dentro de la misma celda o comiendo)
+                                // Suma 1 al contador de turnos que lleva aquí
                                 turnos_zombie_en_celda[i][j]++;
                             }
                         } else {
-                            progreso_zombie[i][j] = 1.0f;
-                            turnos_zombie_en_celda[i][j] = 0;
+                            // Si en esta celda ya no hay ningún zombie, deja su progreso visual en 1 (100% completado)
+                            progreso_zombie[i][j] = 1;
                         }
                     }
                 }
 
-                // Comportamiento de Cometumbas (ID 12): tarda 2 turnos en eliminar la tumba
+                // Comportamiento de Cometumbas, la cual tarda 2 turnos en eliminar la tumba
                 for (int i = 0; i < mapa.filas; i++) {
                     for (int j = 0; j < mapa.columnas; j++) {
                         if (mapa.matriz[i][j] == 12) {
@@ -669,7 +721,7 @@ int main(int argc, char *argv[]) {
                         }
                     }
                 }
-
+                //Verificacion de derrota o perdida
                 int estado = verificar_victoria(&mapa);
                 if (estado_rondas.fase_actual == fase_victoria) {
                     resultadoPartida = 1;
@@ -686,7 +738,7 @@ int main(int argc, char *argv[]) {
                 ultimo_tiempo = tiempo_actual;
             }
 
-            // 4. Sonido de mordisco alternado solo cuando el zombie ya se acercó a la planta
+            // Sonido de mordisco alternado solo cuando el zombie ya se acercó a la planta
             if (tiempo_actual - ultimo_tiempo_mordisco >= TIEMPO_MORDISCO) {
                 bool hayZombieComiendo = false;
 
@@ -705,7 +757,7 @@ int main(int argc, char *argv[]) {
                         }
                     }
                 }
-
+                // se alterna
                 if (hayZombieComiendo) {
                     if (turnoMordisco == 0) {
                         reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoMordisco1);
@@ -722,33 +774,49 @@ int main(int argc, char *argv[]) {
             // Actualizar el deslizamiento fotograma a fotograma
             for (int i = 0; i < mapa.filas; i++) {
                 for (int j = 0; j < mapa.columnas; j++) {
+                    // Obtiene el identificador de lo que hay en la celda actual (i, j)
                     int actual = mapa.matriz[i][j];
+                    // Verifica si ese identificador corresponde a alguno de los tipos de zombie (1, 2, 13 o 14)
                     bool esZombie = (actual == 1 || actual == 2 || actual == 13 || actual == 14);
 
                     if (esZombie) {
+                        // Límite normal de avance dentro de la celda: 1.0f significa llegar al centro de su propia casilla
                         float limite = 1.0f;
 
+                        // Si el zombie no está en la primera columna (borde izquierdo), revisa qué tiene justo enfrente (j - 1)
                         if (j > 0) {
                             int frente = mapa.matriz[i][j - 1];
+                            // Comprueba si en la casilla de la izquierda hay alguna planta (códigos 5, 6, 7, 10, 11 o 12)
                             bool hayPlantaEnfrente = (frente == 5 || frente == 6 || frente == 7 || frente == 10 || frente == 11 || frente == 12);
+                            // Comprueba si en la casilla de la izquierda hay otro zombie
                             bool hayZombieEnfrente = (frente == 1 || frente == 2 || frente == 13 || frente == 14);
 
                             if (hayPlantaEnfrente) {
+                                // Permite que el zombie sobrepase en un 35% el centro de su celda (1.35f) para acercarse a morder la planta
                                 limite = 1.35f;
                             } else if (hayZombieEnfrente) {
+                                // Si hay un zombie adelante, calcula un tope dejando 15% de separación para que no se monten uno encima del otro
                                 float limiteDetras = progreso_zombie[i][j - 1] - 0.15f;
+
+                                // Si ese tope es menor al centro normal de la celda (1.0f), ajusta el límite del zombie de atrás
                                 if (limiteDetras < 1.0f) {
                                     if (limiteDetras < 0.5f) {
+                                        // Como mínimo lo deja avanzar hasta la mitad de su celda (0.5f) para que no quede colgado atrás
                                         limite = 0.5f;
                                     } else {
+                                        // Si está entre 0.5f y 1.0f, usa exactamente la distancia calculada detrás del otro zombie
                                         limite = limiteDetras;
                                     }
                                 }
                             }
                         }
 
+                        // Si el zombie aún no alcanza su límite visual y tiene una duración de animación válida:
                         if (progreso_zombie[i][j] < limite && duracion_deslizamiento_zombie[i][j] > 0) {
+                            // Suma el avance proporcional al tiempo transcurrido en este fotograma (delta_tiempo)
                             progreso_zombie[i][j] += (float)delta_tiempo / (float)duracion_deslizamiento_zombie[i][j];
+
+                            // Si en este fotograma se pasó un poco del tope permitido, lo recorta exactamente al límite
                             if (progreso_zombie[i][j] > limite) {
                                 progreso_zombie[i][j] = limite;
                             }
@@ -789,6 +857,7 @@ int main(int argc, char *argv[]) {
                     offset_guisante_x = -ANCHO_CASILLA * (1.0f - progreso_guisante);
                 }
 
+                //Funciones constantes para determinar el tamaño y distancia de cada imagen a insertar
                 SDL_FRect rectCasilla = {
                     EJE_X + (j * ANCHO_CASILLA),
                     EJE_Y + (i * ALTO_CASILLA),
@@ -872,6 +941,7 @@ int main(int argc, char *argv[]) {
                     SDL_RenderTexture(renderizador, texturaTumba, NULL, &rectCasilla);
                 }
 
+                //Cargamos valores que encuentra en la matriz
                 switch (Valor_Posicion) {
                     case 1:
                         SDL_RenderTexture(renderizador, texturaZombie, NULL, &rectZombie);
@@ -883,7 +953,7 @@ int main(int argc, char *argv[]) {
                         SDL_RenderTexture(renderizador, texturaGirasol, NULL, &rectGirasol);
                         break;
                     case 6:
-                        // Muestra la pose de disparo durante los 350 ms previos a que salga el guisante
+                        // Muestra la pose de disparo durante los ms previos a que salga el guisante
                         if (tiempo_actual < fin_disparo[i][j]) {
                             SDL_RenderTexture(renderizador, texturaLanzaguisantesDisparando, NULL, &rectPlanta);
                         } else {
@@ -909,7 +979,7 @@ int main(int argc, char *argv[]) {
                         SDL_RenderTexture(renderizador, texturaCaracubeta, NULL, &rectCaracubo);
                         break;
                 }
-
+                //Validaciones respecto movimiento o desaparicion de algun numero (planta o sol)
                 if (tiempo_actual < fin_explosion[i][j]) {
                     SDL_RenderTexture(renderizador, texturaPapapumExplosion, NULL, &rectPapapumExplosion);
                 }
@@ -935,6 +1005,7 @@ int main(int argc, char *argv[]) {
             ALTO_JUGADOR,
         };
 
+        //ponemos la pala encima si fue electa
         SDL_RenderTexture(renderizador, texturaJugador, NULL, &rectJugador);
         if (palaActiva) {
             SDL_RenderTexture(renderizador, texturaPala, NULL, &rectJugador);
@@ -960,55 +1031,55 @@ int main(int argc, char *argv[]) {
         SDL_RenderDebugText(renderizador, 700, 500, "Key_Q");
         SDL_SetRenderScale(renderizador, 1.0f, 1.0f);
 
-        // Pantalla de fin de partida (Victoria o Derrota)
-        if (resultadoPartida == 1) {
+        // Pantalla de fin de partida
+        if (resultadoPartida == 1) { 
+            // misma funcion utlizada para la pantalla inicial
+            SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_BLEND);  
+            SDL_SetRenderDrawColor(renderizador, 0, 0, 0, 150); 
+            SDL_FRect fondoFin = { 0, 0, anchuravent, alturavent };
+            SDL_RenderFillRect(renderizador, &fondoFin);
+            SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_NONE);
+
+            // Dibujar el texto principal "Ganaste"
+            int escalaVictoria = 12;                                 
+            SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);       
+            SDL_SetRenderScale(renderizador, escalaVictoria, escalaVictoria); 
+            
+            SDL_RenderDebugText(renderizador, 400, 200, "Ganaste"); 
+
+            // Dibujar la instrucción para salir debajo del título
+            int escalaSalir = 3;                                     
+            SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);     
+            SDL_SetRenderScale(renderizador, escalaSalir, escalaSalir);    
+            
+            SDL_RenderDebugText(renderizador, 250 , 800 , "Presione ESC para salir");
+            SDL_SetRenderScale(renderizador, 1, 1);// Restaura la escala normal (1x) 
+
+        } else if (resultadoPartida == 2) { 
+            
+            // misma funcion utlizada para la pantalla inicial
             SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_BLEND);
             SDL_SetRenderDrawColor(renderizador, 0, 0, 0, 150);
             SDL_FRect fondoFin = { 0, 0, (float)anchuravent, (float)alturavent };
             SDL_RenderFillRect(renderizador, &fondoFin);
             SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_NONE);
 
-            float escalaVictoria = 12.0f;
-            SDL_SetRenderDrawColor(renderizador, 255, 215, 0, 255);
-            SDL_SetRenderScale(renderizador, escalaVictoria, escalaVictoria);
-            float xGanaste = ((anchuravent / escalaVictoria) - (7.0f * 8.0f)) / 2.0f;
-            float yGanaste = ((alturavent / escalaVictoria) - 8.0f) / 2.0f - 5.0f;
-            SDL_RenderDebugText(renderizador, xGanaste, yGanaste, "Ganaste");
-
-            float escalaSalir = 3.0f;
-            SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);
-            SDL_SetRenderScale(renderizador, escalaSalir, escalaSalir);
-            float xSalir = ((anchuravent / escalaSalir) - (23.0f * 8.0f)) / 2.0f;
-            float ySalir = ((alturavent / escalaSalir) / 2.0f) + 25.0f;
-            SDL_RenderDebugText(renderizador, xSalir, ySalir, "Presione ESC para salir");
-            SDL_SetRenderScale(renderizador, 1.0f, 1.0f);
-        } else if (resultadoPartida == 2) {
-            SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(renderizador, 0, 0, 0, 150);
-            SDL_FRect fondoFin = { 0, 0, (float)anchuravent, (float)alturavent };
-            SDL_RenderFillRect(renderizador, &fondoFin);
-            SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_NONE);
-
-            float anchoDerrota = 750.0f;
-            float altoDerrota = 550.0f;
-            SDL_FRect rectDerrota = {
-                (anchuravent - anchoDerrota) / 2.0f,
-                (alturavent - altoDerrota) / 2.0f - 30.0f,
-                anchoDerrota,
-                altoDerrota
-            };
+            // Definir dimensiones y centrar la imagen de derrota
+            SDL_FRect rectDerrota = { 590, 230, 750, 550 };
             SDL_RenderTexture(renderizador, texturaDerrota, NULL, &rectDerrota);
 
-            float escalaSalir = 3.0f;
+            // Dibujar la instrucción para salir justo debajo de la imagen de derrota
+            int escalaSalir = 3;
             SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);
             SDL_SetRenderScale(renderizador, escalaSalir, escalaSalir);
-            float xSalir = ((anchuravent / escalaSalir) - (23.0f * 8.0f)) / 2.0f;
-            float ySalir = ((rectDerrota.y + rectDerrota.h) / escalaSalir) + 10.0f;
-            SDL_RenderDebugText(renderizador, xSalir, ySalir, "Presione ESC para salir");
-            SDL_SetRenderScale(renderizador, 1.0f, 1.0f);
+            
+            SDL_RenderDebugText(renderizador, 250, 1000, "Presione ESC para salir");
+            SDL_SetRenderScale(renderizador, 1.0f, 1.0f);   // Restaura la escala normal (1x)
         }
 
+        // Actualiza la ventana mostrando todo lo que se dibujó en memoria durante este fotograma
         SDL_RenderPresent(renderizador);
+        // Pausa la ejecución 16 milisegundos para mantener el juego cerca de 60 FPS 
         SDL_Delay(16);
     }
 
@@ -1044,7 +1115,7 @@ int main(int argc, char *argv[]) {
     SDL_DestroyTexture(texturaPrepararse2);
     SDL_DestroyTexture(texturaPrepararse3);
 
-    // Liberar audio y mixer (todos los MIX_Audio deben destruirse antes de MIX_DestroyMixer)
+    // Liberar audio y mixer, todos los MIX_Audio deben destruirse antes de MIX_DestroyMixer
     MIX_DestroyTrack(pistaMusica);
     for (int k = 0; k < TOTAL_PISTAS_EFECTOS; k++) {
         MIX_DestroyTrack(pistasEfectos[k]);
@@ -1069,20 +1140,6 @@ int main(int argc, char *argv[]) {
     MIX_DestroyAudio(sonidoSirenaOleada);
     MIX_DestroyMixer(mixer);
     MIX_Quit();
-
-    // Liberar matrices dinamicas
-    for (int i = 0; i < mapa.filas; i++) {
-        if (matriz_vida_juego != NULL) free(matriz_vida_juego[i]);
-        if (matriz_guis != NULL) free(matriz_guis[i]);
-        if (matriz_tumba != NULL) free(matriz_tumba[i]);
-        if (matriz_sol != NULL) free(matriz_sol[i]);
-        if (mapa.matriz != NULL) free(mapa.matriz[i]);
-    }
-    free(matriz_vida_juego);
-    free(matriz_guis);
-    free(matriz_tumba);
-    free(matriz_sol);
-    free(mapa.matriz);
 
     SDL_DestroyRenderer(renderizador);
     SDL_DestroyWindow(ventana);
