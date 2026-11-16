@@ -12,7 +12,7 @@
 
 bool jugando = true;
 bool inicio = true;
-
+bool mostrar_aviso_oleada = false;
 SDL_Window *ventana = NULL;
 SDL_Renderer *renderizador = NULL;
 
@@ -32,145 +32,145 @@ void reproducirEfecto(MIX_Track *pistas[], int totalPistas, int *indiceActual, M
     MIX_Track *pista = pistas[*indiceActual];
     MIX_SetTrackAudio(pista, sonido);
     MIX_PlayTrack(pista, 0);
-
+    
     *indiceActual = (*indiceActual + 1) % totalPistas;
 }
 
 int main(int argc, char *argv[]) {
-
+    
     //esta parte se encarga de generar una "semilla" nueva cada vez que se inicie, esto para el rand que se utiliza en generar_mapa_aleatorio
     srand((unsigned int)time(NULL));
-
+    
     // Inicializar SDL y crear ventana
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         SDL_Log("Error al iniciar SDL: %s", SDL_GetError());
         return 1;
     }
-
+    
     if (!SDL_CreateWindowAndRenderer(tituloventana, anchuravent, alturavent, 0, &ventana, &renderizador)) {
         SDL_Log("Error al iniciar ventana: %s", SDL_GetError());
         SDL_Quit();
         return 1;
     }
-
+    
     // Cargar configuracion usando las funciones existentes de la tarea1
     Configuracion config = cargar_configuracion("Logica.txt");
     Mapa mapa = {0};
     int contadorSoles = config.soles_iniciales;
     SDL_Event evento;
-
+    
     SDL_Texture *texturaJardin = cargarTextura(renderizador, "Fotografias/Jardin.png");
-
+    
     // Teclado y ventana
     while (inicio) {
-
+        
         while (SDL_PollEvent(&evento)) {
             if (evento.type == SDL_EVENT_QUIT) {
                 inicio = false;
                 jugando = false;
             }
-
+            
             if (evento.type == SDL_EVENT_KEY_DOWN && !evento.key.repeat) {
                 switch (evento.key.scancode) {
                     case SDL_SCANCODE_E:
                         mapa = cargar_mapa("PartidaGuardada.txt", &contadorSoles); // le agrege que cargue los soles
                         inicio = false;
                         break;
-
-                    case SDL_SCANCODE_R:
+                        
+                        case SDL_SCANCODE_R:
                         mapa = generar_mapa_aleatorio(5, 9);
                         inicio = false;
                         break;
-
-                    case SDL_SCANCODE_ESCAPE:
+                        
+                        case SDL_SCANCODE_ESCAPE:
                         inicio = false;
                         jugando = false;
                         break;
-
-                    default:
+                        
+                        default:
                         break;
+                    }
                 }
             }
+            SDL_RenderClear(renderizador);
+            SDL_RenderTexture(renderizador, texturaJardin, NULL, NULL);
+            
+            // Oscurecer el fondo del juego con una capa semitransparente
+            SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_BLEND); // Activa la mezcla de transparencia 
+            SDL_SetRenderDrawColor(renderizador, 0, 0, 0, 150);            // Color negro con opacidad media (150 de 255)
+            SDL_FRect fondoFin = { 0, 0, anchuravent, alturavent };
+            SDL_RenderFillRect(renderizador, &fondoFin);                   // Dibuja el rectángulo oscuro encima del tablero
+            SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_NONE);  // Desactiva la transparencia para futuras imagenes
+            
+            int escalaMenu = 6;
+            SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);
+            SDL_SetRenderScale(renderizador, escalaMenu, escalaMenu);
+            SDL_RenderDebugText(renderizador, 20, 50, "Presione E para cargar partida");
+            SDL_RenderDebugText(renderizador, 20, 90, "Presione R para empezar nueva partida");
+            SDL_SetRenderScale(renderizador, 1, 1);
+            
+            SDL_RenderPresent(renderizador);
         }
-        SDL_RenderClear(renderizador);
-        SDL_RenderTexture(renderizador, texturaJardin, NULL, NULL);
-
-        // Oscurecer el fondo del juego con una capa semitransparente
-        SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_BLEND); // Activa la mezcla de transparencia 
-        SDL_SetRenderDrawColor(renderizador, 0, 0, 0, 150);            // Color negro con opacidad media (150 de 255)
-        SDL_FRect fondoFin = { 0, 0, anchuravent, alturavent };
-        SDL_RenderFillRect(renderizador, &fondoFin);                   // Dibuja el rectángulo oscuro encima del tablero
-        SDL_SetRenderDrawBlendMode(renderizador, SDL_BLENDMODE_NONE);  // Desactiva la transparencia para futuras imagenes
-
-        int escalaMenu = 6;
-        SDL_SetRenderDrawColor(renderizador, 255, 255, 255, 255);
-        SDL_SetRenderScale(renderizador, escalaMenu, escalaMenu);
-        SDL_RenderDebugText(renderizador, 20, 50, "Presione E para cargar partida");
-        SDL_RenderDebugText(renderizador, 20, 90, "Presione R para empezar nueva partida");
-        SDL_SetRenderScale(renderizador, 1, 1);
-
-        SDL_RenderPresent(renderizador);
-    }
-
-    if (!jugando) {
-        SDL_DestroyTexture(texturaJardin);
-        SDL_DestroyRenderer(renderizador);
-        SDL_DestroyWindow(ventana);
-        SDL_Quit();
-        return 0;
-    }
-
-    // Respaldo si se presiono E pero aun no existe PartidaGuardada.txt
-    if (mapa.matriz == NULL) {
-        SDL_Log("No se encontro partida guardada, generando mapa aleatorio...");
-        mapa = generar_mapa_aleatorio(5, 9);
-    }
-
-    // Matrices de la Tarea 2
-    int **matriz_vida_juego = matriz_vida(&mapa, config);
-    int **matriz_guis = matriz_guisantes(&mapa);
-    int **matriz_tumba = matriz_tumbas(&mapa);
-    int **matriz_sol = matriz_soles(&mapa);
-
-    int filaJugador = 1;
-    int columnaJugador = 1;
-
-    // Matriz auxiliar para mover el fichero del jugador
-    int movilidad[mapa.filas][mapa.columnas];
-
-    // Guarda hasta qué milisegundo se ve la explosión, pose previa al disparo y retener el guisante para luego disparar
-    Uint64 fin_explosion[mapa.filas][mapa.columnas];
-    Uint64 fin_disparo[mapa.filas][mapa.columnas];
-    Uint64 tiempo_salida_guisante[mapa.filas][mapa.columnas];
-    int guisante_pendiente[mapa.filas][mapa.columnas];
-    
-    // Cuenta cuántos turnos lleva una Cometumbas comiéndose una tumba
-    int turnos_cometumba[mapa.filas][mapa.columnas];
-
-    // Control continuo del deslizamiento de zombies (de 0.0 a 1.35 por casilla)
-    float progreso_zombie[mapa.filas][mapa.columnas];
-    Uint64 duracion_deslizamiento_zombie[mapa.filas][mapa.columnas];
-    int turnos_zombie_en_celda[mapa.filas][mapa.columnas];
-
-    // Indica si el guisante de esa celda se está deslizando desde la anterior
-    bool guisante_deslizando[mapa.filas][mapa.columnas];
-
-    for (int i = 0; i < mapa.filas; i++) {
-        for (int j = 0; j < mapa.columnas; j++) {
-            //rellenamos matrices extras con 0
-            movilidad[i][j] = 0;
-            fin_explosion[i][j] = 0;
-            fin_disparo[i][j] = 0;
-            tiempo_salida_guisante[i][j] = 0;
-            guisante_pendiente[i][j] = 0;
-            turnos_cometumba[i][j] = 0;
+        
+        if (!jugando) {
+            SDL_DestroyTexture(texturaJardin);
+            SDL_DestroyRenderer(renderizador);
+            SDL_DestroyWindow(ventana);
+            SDL_Quit();
+            return 0;
+        }
+        
+        // Respaldo si se presiono E pero aun no existe PartidaGuardada.txt
+        if (mapa.matriz == NULL) {
+            SDL_Log("No se encontro partida guardada, generando mapa aleatorio...");
+            mapa = generar_mapa_aleatorio(5, 9);
+        }
+        
+        // Matrices de la Tarea 2
+        int **matriz_vida_juego = matriz_vida(&mapa, config);
+        int **matriz_guis = matriz_guisantes(&mapa);
+        int **matriz_tumba = matriz_tumbas(&mapa);
+        int **matriz_sol = matriz_soles(&mapa);
+        
+        int filaJugador = 1;
+        int columnaJugador = 1;
+        
+        // Matriz auxiliar para mover el fichero del jugador
+        int movilidad[mapa.filas][mapa.columnas];
+        
+        // Guarda hasta qué milisegundo se ve la explosión, pose previa al disparo y retener el guisante para luego disparar
+        Uint64 fin_explosion[mapa.filas][mapa.columnas];
+        Uint64 fin_disparo[mapa.filas][mapa.columnas];
+        Uint64 tiempo_salida_guisante[mapa.filas][mapa.columnas];
+        int guisante_pendiente[mapa.filas][mapa.columnas];
+        
+        // Cuenta cuántos turnos lleva una Cometumbas comiéndose una tumba
+        int turnos_cometumba[mapa.filas][mapa.columnas];
+        
+        // Control continuo del deslizamiento de zombies (de 0.0 a 1.35 por casilla)
+        float progreso_zombie[mapa.filas][mapa.columnas];
+        Uint64 duracion_deslizamiento_zombie[mapa.filas][mapa.columnas];
+        int turnos_zombie_en_celda[mapa.filas][mapa.columnas];
+        
+        // Indica si el guisante de esa celda se está deslizando desde la anterior
+        bool guisante_deslizando[mapa.filas][mapa.columnas];
+        
+        for (int i = 0; i < mapa.filas; i++) {
+            for (int j = 0; j < mapa.columnas; j++) {
+                //rellenamos matrices extras con 0
+                movilidad[i][j] = 0;
+                fin_explosion[i][j] = 0;
+                fin_disparo[i][j] = 0;
+                tiempo_salida_guisante[i][j] = 0;
+                guisante_pendiente[i][j] = 0;
+                turnos_cometumba[i][j] = 0;
             progreso_zombie[i][j] = 1.0f;
             duracion_deslizamiento_zombie[i][j] = 4000;
             turnos_zombie_en_celda[i][j] = 0;
             guisante_deslizando[i][j] = false;
         }
     }
-
+    
     // Cargar assets
     SDL_Texture *texturaLanzaguisantesPaquete = cargarTextura(renderizador, "Fotografias/Lanzaguisantes_Paquete.png");
     SDL_Texture *texturaGirasolPaquete = cargarTextura(renderizador, "Fotografias/Girasol_Paquete.png");
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
     SDL_Texture *texturaCuentaSol = cargarTextura(renderizador, "Fotografias/GuardaSoles.png");
     SDL_Texture *texturaHuecoPala = cargarTextura(renderizador, "Fotografias/huecoPala.png");
     SDL_Texture *texturaPala = cargarTextura(renderizador, "Fotografias/Pala.png");
-
+    
     SDL_Texture *texturaDerrota = cargarTextura(renderizador, "Fotografias/ComieronTUCerebro.png");
     SDL_Texture *texturaOleada = cargarTextura(renderizador, "Fotografias/Oleada_Viene.png");
     SDL_Texture *texturaJugador = cargarTextura(renderizador, "Fotografias/Seleccionador.png");
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
     SDL_Texture *texturaPrepararse1 = cargarTextura(renderizador, "Fotografias/Ready.png");
     SDL_Texture *texturaPrepararse2 = cargarTextura(renderizador, "Fotografias/Set.png");
     SDL_Texture *texturaPrepararse3 = cargarTextura(renderizador, "Fotografias/PLANT.png");
-
+    
     // Validaciones
     if (!texturaJardin || !texturaJugador) {
         SDL_DestroyRenderer(renderizador);
@@ -210,13 +210,13 @@ int main(int argc, char *argv[]) {
         SDL_Quit();
         return 1;
     }
-
+    
     SDL_Texture *fotosIntro[3] = {
         texturaPrepararse1,
         texturaPrepararse2,
         texturaPrepararse3
     };
-
+    
     // Cuadrar fotos de paquetes y etc.
     SDL_FRect rectPaq1 = { 100, 160, 250, 150 };
     SDL_FRect rectPaq2 = { 100, 320, 250, 150 };
@@ -227,19 +227,20 @@ int main(int argc, char *argv[]) {
     SDL_FRect rectSOL = { 20, 40, 80, 80 };
     SDL_FRect rectHuecoPala = { 1500, 950, 110, 110 };
     SDL_FRect rectPala = { 1500, 950, 110, 110 };
-
+    
     // Configurar sonidos
     MIX_Init();
     MIX_Mixer *mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
     MIX_Track *pistaMusica = MIX_CreateTrack(mixer);
-
-    const int TOTAL_PISTAS_EFECTOS = 6;
-    MIX_Track *pistasEfectos[6];
+    
+    //para poder poner 8 sonidos de forma simultanea
+    const int TOTAL_PISTAS_EFECTOS = 8;
+    MIX_Track *pistasEfectos[8];
     for (int k = 0; k < TOTAL_PISTAS_EFECTOS; k++) {
         pistasEfectos[k] = MIX_CreateTrack(mixer);
     }
     int indicePista = 0;
-
+    
     //Cargamos sonidos
     MIX_Audio *musicaFondo = MIX_LoadAudio(mixer, "Audios/MusicaDia.mp3", false);
     MIX_Audio *SonidoInicio = MIX_LoadAudio(mixer, "Audios/Listos.mp3", true);
@@ -275,13 +276,13 @@ int main(int argc, char *argv[]) {
     const Uint64 TIEMPO_TURNO = 4000;     // Más alto = zombies más lentos (4 segundos por paso)
     const Uint64 TIEMPO_GUISANTE = 350;   // Menor valor = guisantes más rápidos
     const Uint64 TIEMPO_DISPARO = 2000;   // Intervalo en ms entre disparos
-
+    
     
     int plantaSeleccionada = 0; // 0 = ninguna seleccionada
     bool palaActiva = false;    // false = pala en su hueco, true = pala en mano
-
+    
     bool enIntro = true;
-
+    
     // Cantidad de ms que pasaron desde que se inicio
     Uint64 inicioIntro = SDL_GetTicks();
     Uint64 tiempo_anterior = inicioIntro;
@@ -289,7 +290,8 @@ int main(int argc, char *argv[]) {
     Uint64 ultimo_tiempo_guisante = inicioIntro;
     Uint64 ultimo_tiempo_disparo = inicioIntro;
     Uint64 ultimo_tiempo_mordisco = inicioIntro;
-
+    Uint64 tiempo_inicio_oleada = 0; // Usa el mismo tipo de dato que 'tiempo_actual'
+    
     // Bucle principal de juego
     while (jugando) {
         Uint64 tiempo_actual = SDL_GetTicks();
@@ -334,7 +336,7 @@ int main(int argc, char *argv[]) {
                 } else {
                     //Establecemos musica
                     MIX_SetTrackAudio(pistaMusica, musicaFondo);
-                    MIX_SetTrackGain(pistaMusica, 0.8);
+                    MIX_SetTrackGain(pistaMusica, 1); //volumen
 
                     SDL_PropertiesID opciones = SDL_CreateProperties();
                     //-1 para bucle infinito
@@ -581,7 +583,20 @@ int main(int argc, char *argv[]) {
 
             // Logica por turnos
             if (tiempo_actual - ultimo_tiempo >= TIEMPO_TURNO) {
-                actualizar_estado_rondas(&estado_rondas, &mapa, config); // actualiza el temporizador de preparacion/descanso y verifica si murieron todos los zombies
+
+                int fase_anterior = estado_rondas.fase_actual;
+                actualizar_estado_rondas(&estado_rondas, &mapa, config);
+
+                    // Se activa únicamente en el turno exacto en que empieza la oleada
+                    if (fase_anterior != fase_oleada && estado_rondas.fase_actual == fase_oleada) {
+                        mostrar_aviso_oleada = true;
+                        tiempo_inicio_oleada = tiempo_actual;
+
+                        reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoOleadaAviso);
+                        reproducirEfecto(pistasEfectos, TOTAL_PISTAS_EFECTOS, &indicePista, sonidoSirenaOleada);
+                    }
+                
+                SDL_RenderPresent(renderizador);
 
                 // solo genera zombies si estamos en medio de una oleada y aun quedan zombies por salir
                 if (estado_rondas.fase_actual == fase_oleada && estado_rondas.zombies_por_spawnear > 0) {
@@ -1030,6 +1045,16 @@ int main(int argc, char *argv[]) {
         SDL_RenderDebugText(renderizador, 10, 430, "Key_5");
         SDL_RenderDebugText(renderizador, 700, 500, "Key_Q");
         SDL_SetRenderScale(renderizador, 1.0f, 1.0f);
+
+        // Dibujar cartel de oleada durante 3 segundos 
+        if (mostrar_aviso_oleada) {
+            if (tiempo_actual - tiempo_inicio_oleada <3000) {
+                SDL_FRect rectOleada = { 300, 400, 1300, 200 };
+                SDL_RenderTexture(renderizador, texturaOleada, NULL, &rectOleada);
+            } else {
+                mostrar_aviso_oleada = false; // Ya pasaron los 3 segundos, se deja de dibujar
+            }
+        }
 
         // Pantalla de fin de partida
         if (resultadoPartida == 1) { 
