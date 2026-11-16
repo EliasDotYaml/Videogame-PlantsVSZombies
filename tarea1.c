@@ -357,3 +357,20 @@ int colocar_planta_en_ronda(Mapa *mapa, int **matriz_vida, int fila, int columna
     }
     return colocar_planta(mapa, matriz_vida, fila, columna, tipo_planta, soles_disponibles);
 }
+
+// Si el jugador esta en preparacion o descanso, adelanta el reloj a 0 y lanza la oleada
+void saltar_fase(EstadoRondas *estado) {
+    if (estado == NULL) return;
+
+    if (estado->fase_actual == fase_preparacion) {
+        estado->tiempo_restante_fase = 0;
+        estado->fase_actual = fase_oleada;
+        estado->zombies_por_spawnear = 10 + (estado->ronda_actual - 1) * 5;
+    } 
+    else if (estado->fase_actual == fase_descanso) {
+        estado->tiempo_restante_fase = 0;
+        estado->ronda_actual++;
+        estado->fase_actual = fase_oleada;
+        estado->zombies_por_spawnear = 10 + (estado->ronda_actual - 1) * 5;
+    }
+}

@@ -80,3 +80,5 @@ int puede_plantar(const EstadoRondas *estado);
 int hay_zombies_en_mapa(const Mapa *mapa);
 void actualizar_estado_rondas(EstadoRondas *estado, const Mapa *mapa, Configuracion config);
 int colocar_planta_en_ronda(Mapa *mapa, int **matriz_vida, int fila, int columna, int tipo_planta, int *soles_disponibles, const EstadoRondas *estado);
+// Adelanta el tiempo de preparacion o descanso para iniciar la oleada de inmediato
+void saltar_fase(EstadoRondas *estado);
