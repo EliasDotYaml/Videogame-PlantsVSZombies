@@ -1,16 +1,18 @@
-# compilador y banderas de advertencia
+# Compilador y banderas
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -g
+SDL_FLAGS = -lSDL3 -lSDL3_image -lSDL3_mixer
 
-# regla principal: compila el programa y genera el ejecutable "prueba"
-all: prueba
+TARGET = juego$(EXT)
 
+# Compilar todo
+all: $(TARGET)
 
-prueba: main.o tarea1.o tarea2.o
-	$(CC) $(CFLAGS) -o prueba main.o tarea1.o tarea2.o
+$(TARGET): SalidaVisualizacion.o tarea1.o tarea2.o
+	$(CC) $(CFLAGS) -o $(TARGET) SalidaVisualizacion.o tarea1.o tarea2.o $(SDL_FLAGS)
 
-main.o: main.c Tarea1Constantes.h 
-	$(CC) $(CFLAGS) -c main.c
+SalidaVisualizacion.o: SalidaVisualizacion.c Tarea1Constantes.h VisualizacionConstantes.h
+	$(CC) $(CFLAGS) -c SalidaVisualizacion.c
 
 tarea1.o: tarea1.c Tarea1Constantes.h
 	$(CC) $(CFLAGS) -c tarea1.c
@@ -18,5 +20,8 @@ tarea1.o: tarea1.c Tarea1Constantes.h
 tarea2.o: tarea2.c Tarea1Constantes.h
 	$(CC) $(CFLAGS) -c tarea2.c
 
+# Limpiar archivos y ejecutable
 clean:
-	rm -f *.o *.gch prueba PartidaGuardada.txt
+	rm -f *.o *.gch juego juego.exe PartidaGuardada.txt
+
+.PHONY: all clean

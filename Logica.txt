@@ -5,7 +5,7 @@ frecuencia_sol 5
 frecuencia_disparo 2
 tiempo_preparacion 6
 tiempo_descanso 20
-soles_iniciales 600
+soles_iniciales 550
 
 Mapa
 5 10 
