@@ -2,12 +2,12 @@
 
 ## Estructura del Proyecto
 
- `tarea1.c`: Lectura de archivos y gestión de memoria dinámica (`malloc`/`free`).
- `tarea2.c`: Lógica principal del juego (oleadas, movimiento, ataques, soles, tumbas y colisiones).
- `SalidaVisualizacion.c`: Bucle gráfico principal e interfaz en SDL3.
- `main.c`: Programa de prueba de lectura y simulación en consola (sin gráficos).
- `Logica.txt`: Parámetros iniciales de configuración y distribución del mapa de la partida.
- `Makefile`: Automatización de la compilación para Windows y Linux.
+ * `tarea1.c`: Lectura de archivos y gestión de memoria dinámica (`malloc`/`free`).
+ * `tarea2.c`: Lógica principal del juego (oleadas, movimiento, ataques, soles, tumbas y colisiones).
+ * `SalidaVisualizacion.c`: Bucle gráfico principal e interfaz en SDL3.
+ * `main.c`: Programa de prueba de lectura y simulación en consola (sin gráficos).
+ * `Logica.txt`: Parámetros iniciales de configuración y distribución del mapa de la partida.
+ * `Makefile`: Automatización de la compilación para Windows y Linux.
 
 ## Compilación y Ejecución
 
