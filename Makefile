@@ -5,6 +5,7 @@ SDL_FLAGS = -lSDL3 -lSDL3_image -lSDL3_mixer
 
 TARGET = juego$(EXT)
 
+
 # Compilar todo
 all: $(TARGET)
 
