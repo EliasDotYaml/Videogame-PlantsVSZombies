@@ -435,7 +435,6 @@ int spawnear_zombies(Mapa *mapa, int** matriz_vida, Configuracion config, int ro
             }
         }
     }
-
     // 2. Retorna el total real después de revisar todas las filas
     return spawneados;
 }

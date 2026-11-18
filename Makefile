@@ -23,5 +23,3 @@ tarea2.o: tarea2.c Tarea1Constantes.h
 # Limpiar archivos y ejecutable
 clean:
 	rm -f *.o *.gch juego juego.exe PartidaGuardada.txt
-
-.PHONY: all clean

@@ -206,7 +206,6 @@ int guardar_mapa(const char *nombre_archivo, const Mapa *mapa, int soles_disponi
         }
         fprintf(fp, "\n");
     }
-
     fclose(fp);
     printf("Estado del juego guardado exitosamente en '%s'\n", nombre_archivo);
     return 1;

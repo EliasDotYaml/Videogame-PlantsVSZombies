@@ -143,7 +143,6 @@ int main() {
     // se muestra el mapa en pantalla
     imprimir_mapa(&mapa);
 
-
     //=================================================
     //logica de juego jejejeje (tarea 2)
     //===============================================

@@ -666,7 +666,6 @@ int main(int argc, char *argv[]) {
 
 
 
-
         // La logica de la partida solo avanza mientras no haya terminado (resultadoPartida == 0)
         if (resultadoPartida == 0) {
 
